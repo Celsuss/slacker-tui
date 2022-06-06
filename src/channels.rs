@@ -18,9 +18,10 @@ struct Channel {
     unread_count: usize,
 }
 
-pub fn render_channels<'a>(channel_list_state: &ListState) -> List<'a> {
+pub fn render_channels<'a>(channel_list_state: &ListState, is_active: bool) -> List<'a> {
     let channels = Block::default()
         .borders(Borders::ALL)
+        .border_style(Style::default().fg(if is_active { Color::Magenta } else { Color::White }))
         .style(Style::default().fg(Color::White))
         .title("Channels")
         .border_type(BorderType::Plain);

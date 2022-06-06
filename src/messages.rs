@@ -82,7 +82,7 @@ pub fn render_messages<'a>() -> Paragraph<'a>{
 
 }
 
-pub fn render_messages_input<'a>() -> Paragraph<'a>{
+pub fn render_messages_input<'a>(is_active: bool) -> Paragraph<'a>{
     // TODO: Get text input
     // Get text input
     let text_input = "test input".to_string();
@@ -90,7 +90,7 @@ pub fn render_messages_input<'a>() -> Paragraph<'a>{
     // Paragraph block
     let paragraph_block = Block::default()
         .borders(Borders::ALL)
-        .border_style(Style::default().fg(Color::White))
+        .border_style(Style::default().fg(if is_active { Color::Magenta } else { Color::White }))
         .style(Style::default().fg(Color::White))
         .title("Input")
         .border_type(BorderType::Plain);
