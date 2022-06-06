@@ -22,6 +22,7 @@ use tui::{
 use crate::Event;
 use crate::channels;
 use crate::home;
+use crate::messages;
 
 enum MenuItem {
     Home,
@@ -79,7 +80,10 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
             rect.render_stateful_widget(channels::render_channels(&channel_list_state), root_chunks[0], &mut channel_list_state);
 
             // Render home
-            rect.render_widget(home::render_home(), root_chunks[1]);
+            // rect.render_widget(home::render_home(), root_chunks[1]);
+
+            // Render messages
+            rect.render_widget(messages::render_messages(), root_chunks[1]);
         })?;
 
         // TODO: Move to function

@@ -25,6 +25,7 @@ use tui::{
 mod channels;
 mod windows;
 mod home;
+mod messages;
 
 // Input events
 pub enum Event<T> { 
