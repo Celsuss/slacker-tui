@@ -27,6 +27,8 @@ use crate::messages;
 enum MenuItem {
     Home,
     Channels,
+    Teams,
+    Users,
     Messages,
     Input,
     Search,
@@ -42,6 +44,8 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
     let window_titles = vec![
         "Home",
         "Channels",
+        "Teams",
+        "Users",
         "Messages",
         "Input",
         "Search",
@@ -49,7 +53,11 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
 
     let mut active_window_item = MenuItem::Channels;
     let mut channel_list_state = ListState::default();
+    let mut team_list_state = ListState::default();
+    let mut user_list_state = ListState::default();
     channel_list_state.select(Some(0));
+    team_list_state.select(Some(0));
+    user_list_state.select(Some(0));
 
     loop {
         // Windows layout
@@ -67,21 +75,34 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
                 )
                 .split(size);
             
-            // Render channels
-            let channels: Vec<_> = window_titles
-                .iter()
-                .map(|title| {
-                    ListItem::new(Spans::from(vec![Span::styled(
-                        title.clone(),
-                        Style::default(),
-                    )]))
-                }).collect();
+            // Render teams, channels and users
+            let channels_chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints(
+                    [
+                        Constraint::Percentage(10),     // Teams
+                        Constraint::Percentage(55),     // Channels
+                        Constraint::Percentage(35),     // Users
+                    ]
+                    .as_ref(),
+                )
+                .split(root_chunks[0]);
 
-            rect.render_stateful_widget(channels::render_channels(&channel_list_state, matches!(active_window_item, MenuItem::Channels)), root_chunks[0], &mut channel_list_state);
+            // let channels: Vec<_> = window_titles
+            //     .iter()
+            //     .map(|title| {
+            //         ListItem::new(Spans::from(vec![Span::styled(
+            //             title.clone(),
+            //             Style::default(),
+            //         )]))
+            //     }).collect();
 
-            // Render home
-            // rect.render_widget(home::render_home(), root_chunks[1]);
+            rect.render_stateful_widget(channels::render_teams(&team_list_state, matches!(active_window_item, MenuItem::Teams)), channels_chunks[0], &mut team_list_state);
+            rect.render_stateful_widget(channels::render_channels(&channel_list_state, matches!(active_window_item, MenuItem::Channels)), channels_chunks[1], &mut channel_list_state);
+            rect.render_stateful_widget(channels::render_users(&user_list_state, matches!(active_window_item, MenuItem::Users)), channels_chunks[2], &mut team_list_state);;
 
+
+            // Render messages and messages input
             let messages_chunks = Layout::default()
                         .direction(Direction::Vertical)
                         .constraints(
@@ -90,7 +111,6 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
                         )
                         .split(root_chunks[1]);
 
-            // Render messages
             rect.render_widget(messages::render_messages(), messages_chunks[0]);
             rect.render_widget(messages::render_messages_input(matches!(active_window_item, MenuItem::Input)), messages_chunks[1]);
         })?;
@@ -106,16 +126,34 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
                 }
 
                 KeyEvent{ code: KeyCode::Up, modifiers: KeyModifiers::NONE} => {
-
+                    match active_window_item {
+                        MenuItem::Channels => {
+                            active_window_item = MenuItem::Teams;
+                        }
+                        MenuItem::Users => {
+                            active_window_item = MenuItem::Channels;
+                        }
+                        _ => {}
+                    }
                 }
                 KeyEvent{ code: KeyCode::Right, modifiers: KeyModifiers::NONE} => {
                     active_window_item = MenuItem::Input;
                 }
                 KeyEvent{ code: KeyCode::Down, modifiers: KeyModifiers::NONE} => {
-
+                    match active_window_item {
+                        MenuItem::Teams => {
+                            active_window_item = MenuItem::Channels;
+                        }
+                        MenuItem::Channels => {
+                            active_window_item = MenuItem::Users;
+                        }
+                        _ => {}
+                    }
                 }
                 KeyEvent{ code: KeyCode::Left, modifiers: KeyModifiers::NONE} => {
-                    active_window_item = MenuItem::Channels;
+                    if matches!(active_window_item, MenuItem::Input) {
+                        active_window_item = MenuItem::Users;
+                    }
                 }
                 _ => {}
             },
