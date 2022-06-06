@@ -81,3 +81,28 @@ pub fn render_messages<'a>() -> Paragraph<'a>{
     paragraph
 
 }
+
+pub fn render_messages_input<'a>() -> Paragraph<'a>{
+    // TODO: Get text input
+    // Get text input
+    let text_input = "test input".to_string();
+
+    // Paragraph block
+    let paragraph_block = Block::default()
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(Color::White))
+        .style(Style::default().fg(Color::White))
+        .title("Input")
+        .border_type(BorderType::Plain);
+
+    let input: Paragraph = Paragraph::new(vec![
+        Spans::from(vec![
+            Span::raw(text_input.clone()),
+        ])
+    ])
+    .alignment(Alignment::Left)
+    .block(paragraph_block)
+    .wrap(Wrap { trim: true });
+
+    input
+}

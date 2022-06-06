@@ -82,8 +82,17 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
             // Render home
             // rect.render_widget(home::render_home(), root_chunks[1]);
 
+            let messages_chunks = Layout::default()
+                        .direction(Direction::Vertical)
+                        .constraints(
+                            [Constraint::Percentage(90),
+                            Constraint::Percentage(10)].as_ref(),
+                        )
+                        .split(root_chunks[1]);
+
             // Render messages
-            rect.render_widget(messages::render_messages(), root_chunks[1]);
+            rect.render_widget(messages::render_messages(), messages_chunks[0]);
+            rect.render_widget(messages::render_messages_input(), messages_chunks[1]);
         })?;
 
         // TODO: Move to function
