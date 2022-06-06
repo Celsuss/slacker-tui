@@ -23,7 +23,8 @@ use tui::{
 };
 
 mod channels;
-mod renderer;
+mod windows;
+mod home;
 
 // Input events
 pub enum Event<T> { 
@@ -66,7 +67,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     thread::spawn(move || input_listen(&tx, &tick_rate));
 
     enable_raw_mode().expect("can run in raw mode");
-    renderer::render_windows(&rx).expect("can render windows");
+    windows::render_windows(&rx).expect("can render windows");
 
     Ok(())
 }
@@ -91,29 +92,4 @@ fn input_listen(tx: &mpsc::Sender<Event<KeyEvent>>, tick_rate: &Duration) -> Res
             }
         }
     }
-}
-
-fn render_home<'a>() -> Paragraph<'a> {
-    let home = Paragraph::new(vec![
-        Spans::from(vec![Span::raw("")]),
-        Spans::from(vec![Span::raw("Welcome")]),
-        Spans::from(vec![Span::raw("")]),
-        Spans::from(vec![Span::raw("to")]),
-        Spans::from(vec![Span::raw("")]),
-        Spans::from(vec![Span::styled(
-            "slacker-CLI",
-            Style::default().fg(Color::LightBlue),
-        )]),
-        Spans::from(vec![Span::raw("")]),
-        Spans::from(vec![Span::raw("Press 'c' to access channels.")]),
-    ])
-    .alignment(Alignment::Center)
-    .block(
-        Block::default()
-            .borders(Borders::ALL)
-            .style(Style::default().fg(Color::White))
-            .title("Home")
-            .border_type(BorderType::Plain),
-    );
-    home
 }
