@@ -114,7 +114,7 @@ pub fn render_users(user_list_state: &ListState, is_active: bool) -> List<'stati
         .title("Users")
         .border_type(BorderType::Plain);
 
-         // TODO: Get team list
+    // TODO: Get team list
     let user_list = vec![
         "User 1".to_string(),
         "User 2".to_string(),

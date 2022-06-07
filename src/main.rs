@@ -26,6 +26,7 @@ mod channels;
 mod windows;
 mod home;
 mod messages;
+mod input_reciever;
 
 // Input events
 pub enum Event<T> { 
@@ -36,28 +37,28 @@ pub enum Event<T> {
 }
 
 // TUI Menu structure
-#[derive(Copy, Clone, Debug)]
-enum MenuItem {
-    Home,
-    Channels,
-    Messages,
-    Input,
-    Search,
-}
+// #[derive(Copy, Clone, Debug)]
+// enum MenuItem {
+//     Home,
+//     Channels,
+//     Messages,
+//     Input,
+//     Search,
+// }
 
-// Convert MenuItem to usize, will be used to
-// highlight the current menu item using Tabs in TUI component
-impl From<MenuItem> for usize {
-    fn from(item: MenuItem) -> usize {
-        match item {
-            MenuItem::Home => 0,
-            MenuItem::Channels => 1,
-            MenuItem::Messages => 2,
-            MenuItem::Input => 3,
-            MenuItem::Search => 4,
-        }
-    }
-}
+// // Convert MenuItem to usize, will be used to
+// // highlight the current menu item using Tabs in TUI component
+// impl From<MenuItem> for usize {
+//     fn from(item: MenuItem) -> usize {
+//         match item {
+//             MenuItem::Home => 0,
+//             MenuItem::Channels => 1,
+//             MenuItem::Messages => 2,
+//             MenuItem::Input => 3,
+//             MenuItem::Search => 4,
+//         }
+//     }
+// }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // enable_raw_mode().expect("can run in raw mode");

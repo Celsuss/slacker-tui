@@ -23,8 +23,10 @@ use crate::{Event};
 use crate::channels;
 use crate::home;
 use crate::messages;
+use crate::input_reciever;
 
-enum MenuItem {
+#[derive(Copy, Clone, Debug)]
+pub enum MenuItem {
     Home,
     Channels,
     Teams,
@@ -32,6 +34,22 @@ enum MenuItem {
     Messages,
     Input,
     Search,
+}
+
+// Convert MenuItem to usize, will be used to
+// highlight the current menu item using Tabs in TUI component
+impl From<MenuItem> for usize {
+    fn from(item: MenuItem) -> usize {
+        match item {
+            MenuItem::Home => 0,
+            MenuItem::Messages => 1,
+            MenuItem::Input => 2,
+            MenuItem::Users => 3,
+            MenuItem::Channels => 4,
+            MenuItem::Teams => 5,
+            MenuItem::Search => 6,
+        }
+    }
 }
 
 pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) -> Result<(), Box<dyn std::error::Error>>{
@@ -52,6 +70,8 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
     ];
 
     let mut active_window_item = MenuItem::Channels;
+    let mut focused_window_item = MenuItem::Channels;
+
     let mut channel_list_state = ListState::default();
     let mut team_list_state = ListState::default();
     let mut user_list_state = ListState::default();
@@ -65,7 +85,7 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
             let size = rect.size();
             let root_chunks = Layout::default()
                 .direction(Direction::Horizontal)
-                .margin(2)
+                .margin(1)
                 .constraints(
                     [
                         Constraint::Length(20),   // Channels
@@ -115,45 +135,16 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
             rect.render_widget(messages::render_messages_input(matches!(active_window_item, MenuItem::Input)), messages_chunks[1]);
         })?;
 
-        // TODO: Move to function
-        // Receive event from input thread
+        // TODO: Handle exit event
+        input_reciever::recieve_input(rx, &mut active_window_item).expect("Input expect");
+
+        // TODO: Move to input_reciever module
         match rx.recv()? {
             Event::Input(event) => match event {
                 KeyEvent{ code: KeyCode::Char('q'), modifiers: KeyModifiers::NONE} => {
                     disable_raw_mode()?;
                     terminal.show_cursor()?;
                     break;
-                }
-
-                KeyEvent{ code: KeyCode::Up, modifiers: KeyModifiers::NONE} => {
-                    match active_window_item {
-                        MenuItem::Channels => {
-                            active_window_item = MenuItem::Teams;
-                        }
-                        MenuItem::Users => {
-                            active_window_item = MenuItem::Channels;
-                        }
-                        _ => {}
-                    }
-                }
-                KeyEvent{ code: KeyCode::Right, modifiers: KeyModifiers::NONE} => {
-                    active_window_item = MenuItem::Input;
-                }
-                KeyEvent{ code: KeyCode::Down, modifiers: KeyModifiers::NONE} => {
-                    match active_window_item {
-                        MenuItem::Teams => {
-                            active_window_item = MenuItem::Channels;
-                        }
-                        MenuItem::Channels => {
-                            active_window_item = MenuItem::Users;
-                        }
-                        _ => {}
-                    }
-                }
-                KeyEvent{ code: KeyCode::Left, modifiers: KeyModifiers::NONE} => {
-                    if matches!(active_window_item, MenuItem::Input) {
-                        active_window_item = MenuItem::Users;
-                    }
                 }
                 _ => {}
             },
