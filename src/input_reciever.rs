@@ -11,15 +11,13 @@ use std::sync::mpsc;
 use crate::windows::MenuItem;
 use crate::{Event};
 
-pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, active_window_item: &mut MenuItem) -> Result<(), Box<dyn std::error::Error>>{
+pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, active_window_item: &mut MenuItem) -> Result<Event<()>, Box<dyn std::error::Error>>{
      // Receive event from input thread
      match rx.recv()? {
         Event::Input(event) => match event {
-            // KeyEvent{ code: KeyCode::Char('q'), modifiers: KeyModifiers::NONE} => {
-            //     disable_raw_mode()?;
-            //     terminal.show_cursor()?;
-            //     break;
-            // }
+            KeyEvent{ code: KeyCode::Char('q'), modifiers: KeyModifiers::NONE} => {
+                return Ok(Event::Quit);
+            }
 
             KeyEvent{ code: KeyCode::Up, modifiers: KeyModifiers::NONE} => {
                 move_up(active_window_item);           
@@ -39,7 +37,7 @@ pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, act
         Event::Tick => {},
         Event::Quit | Event::Change(_) => todo!(),
     }
-    Ok(())
+    Ok(Event::Tick)
 }
 
 fn move_up(active_window_item: &mut MenuItem) {

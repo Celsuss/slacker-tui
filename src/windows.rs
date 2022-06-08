@@ -136,20 +136,11 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
         })?;
 
         // TODO: Handle exit event
-        input_reciever::recieve_input(rx, &mut active_window_item).expect("Input expect");
-
-        // TODO: Move to input_reciever module
-        match rx.recv()? {
-            Event::Input(event) => match event {
-                KeyEvent{ code: KeyCode::Char('q'), modifiers: KeyModifiers::NONE} => {
-                    disable_raw_mode()?;
-                    terminal.show_cursor()?;
-                    break;
-                }
-                _ => {}
-            },
-            Event::Tick => {},
-            Event::Quit | Event::Change(_) => todo!(),
+        let event = input_reciever::recieve_input(rx, &mut active_window_item).expect("Input expect");
+        if matches!(event, Event::Quit){
+            disable_raw_mode()?;
+            terminal.show_cursor()?;
+            break;
         }
     }
 
