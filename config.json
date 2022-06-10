@@ -1,3 +1,4 @@
 {
-    "ip": "localhost"
+    "ip": "localhost",
+    "oauth_token": "YOUR TOKEN HERE"
 }
