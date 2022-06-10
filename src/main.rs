@@ -27,6 +27,7 @@ mod windows;
 mod home;
 mod messages;
 mod input_reciever;
+mod slack_interface;
 
 // Input events
 pub enum Event<T> { 
@@ -61,6 +62,10 @@ pub enum Event<T> {
 // }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    slack_interface::get_user_list();
+    return Ok(());
+
+
     // enable_raw_mode().expect("can run in raw mode");
     let (tx, rx) = mpsc::channel(); // Create a channel for sending and receiving events
     let tick_rate = Duration::from_millis(200); // Tick rate in milliseconds

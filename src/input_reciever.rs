@@ -18,7 +18,6 @@ pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, act
             KeyEvent{ code: KeyCode::Char('q'), modifiers: KeyModifiers::NONE} => {
                 return Ok(Event::Quit);
             }
-
             KeyEvent{ code: KeyCode::Up, modifiers: KeyModifiers::NONE} => {
                 move_up(active_window_item);           
             }
@@ -30,12 +29,10 @@ pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, act
             }
             KeyEvent{ code: KeyCode::Left, modifiers: KeyModifiers::NONE} => {
                 move_left(active_window_item);
-                
             }
             _ => {}
         },
-        Event::Tick => {},
-        Event::Quit | Event::Change(_) => todo!(),
+        _ => {},
     }
     Ok(Event::Tick)
 }
