@@ -12,7 +12,8 @@ use tui::{
     },
     Terminal,
 };
-use crate::slack_interface::User;
+
+use crate::slack_interface::{user_interface::User};
 
 struct Channel {
     name: String,

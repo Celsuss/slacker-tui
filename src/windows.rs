@@ -24,7 +24,8 @@ use crate::channels;
 use crate::home;
 use crate::messages;
 use crate::input_reciever;
-use crate::slack_interface;
+use crate::slack_interface::{user_interface};
+
 
 #[derive(Copy, Clone, Debug)]
 pub enum MenuItem {
@@ -62,7 +63,7 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
 
     let config = crate::parse_config().expect("Parse config expect");
     let oauth_token = config["oauth_token"].as_str().expect("OAuth token is not a string");
-    let user_list = slack_interface::get_user_list(oauth_token).expect("Get user list expect");
+    let user_list = user_interface::get_user_list(oauth_token).expect("Get user list expect");
 
     let window_titles = vec![
         "Home",

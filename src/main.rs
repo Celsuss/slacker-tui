@@ -39,6 +39,14 @@ pub enum Event<T> {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let config = crate::parse_config().expect("Parse config expect");
+    let oauth_token = config["oauth_token"].as_str().expect("OAuth token is not a string");
+    // let user_list = slack_interface::get_user_list(oauth_token).expect("Get user list expect");
+    let channel_list = slack_interface::get_channel_list(oauth_token).expect("Get channel list expect");
+
+    return Ok(());
+
+
     // enable_raw_mode().expect("can run in raw mode");
     let (tx, rx) = mpsc::channel(); // Create a channel for sending and receiving events
     let tick_rate = Duration::from_millis(200); // Tick rate in milliseconds
@@ -55,7 +63,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn parse_config() -> Result<Value, Box<dyn std::error::Error>> {
     let config_file = fs::read_to_string("config.json")?;
     let config: Value = serde_json::from_str(&config_file)?;
-    println!("{:?}", config);
     Ok(config)
 }
 
