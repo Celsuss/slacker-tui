@@ -5,6 +5,7 @@ use crossterm::{
 };
 // use rand::{distributions::Alphanumeric, prelude::*};
 use serde::{Deserialize, Serialize, de::Expected};
+use serde_json::Value;
 use std::fs;
 use std::io;
 use std::sync::mpsc;
@@ -37,35 +38,7 @@ pub enum Event<T> {
     Change(T)
 }
 
-// TUI Menu structure
-// #[derive(Copy, Clone, Debug)]
-// enum MenuItem {
-//     Home,
-//     Channels,
-//     Messages,
-//     Input,
-//     Search,
-// }
-
-// // Convert MenuItem to usize, will be used to
-// // highlight the current menu item using Tabs in TUI component
-// impl From<MenuItem> for usize {
-//     fn from(item: MenuItem) -> usize {
-//         match item {
-//             MenuItem::Home => 0,
-//             MenuItem::Channels => 1,
-//             MenuItem::Messages => 2,
-//             MenuItem::Input => 3,
-//             MenuItem::Search => 4,
-//         }
-//     }
-// }
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    slack_interface::get_user_list();
-    return Ok(());
-
-
     // enable_raw_mode().expect("can run in raw mode");
     let (tx, rx) = mpsc::channel(); // Create a channel for sending and receiving events
     let tick_rate = Duration::from_millis(200); // Tick rate in milliseconds
@@ -77,6 +50,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     windows::render_windows(&rx).expect("can render windows");
 
     Ok(())
+}
+
+fn parse_config() -> Result<Value, Box<dyn std::error::Error>> {
+    let config_file = fs::read_to_string("config.json")?;
+    let config: Value = serde_json::from_str(&config_file)?;
+    println!("{:?}", config);
+    Ok(config)
 }
 
 fn input_listen(tx: &mpsc::Sender<Event<KeyEvent>>, tick_rate: &Duration) -> Result<(), io::Error> {

@@ -12,6 +12,7 @@ use tui::{
     },
     Terminal,
 };
+use crate::slack_interface::User;
 
 struct Channel {
     name: String,
@@ -106,7 +107,7 @@ pub fn render_teams(team_list_state: &ListState, is_active: bool) -> List<'stati
     list
 }
 
-pub fn render_users(user_list_state: &ListState, is_active: bool) -> List<'static> {
+pub fn render_users(user_list: &Vec<User>, user_list_state: &ListState, is_active: bool) -> List<'static> {
     let users_block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::default().fg(if is_active { Color::Magenta } else { Color::White }))
@@ -114,16 +115,10 @@ pub fn render_users(user_list_state: &ListState, is_active: bool) -> List<'stati
         .title("Users")
         .border_type(BorderType::Plain);
 
-    // TODO: Get team list
-    let user_list = vec![
-        "User 1".to_string(),
-        "User 2".to_string(),
-    ];
-
     let items: Vec<_> = user_list.iter()
         .map(|user| {
             ListItem::new(Spans::from(vec![Span::styled(
-                user.clone(),
+                user.name.clone(),
                 Style::default(),
             )]))
         }).collect();

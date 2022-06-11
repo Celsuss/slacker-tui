@@ -1,12 +1,12 @@
 use curl::easy::{Easy, List};
 use serde_json::{Result, Value};
 
-use std::io::{stdout, Write}; // TODO: Remove this
+pub struct User{
+    id: String,
+    pub name: String,
+}
 
-pub fn get_user_list() -> Result<()> {
-    // TODO: Get access token from config.json
-    let token = "";
-
+pub fn get_user_list(token: &str) -> Result<Vec<User>> {
     // Send request to Slack API
     let mut handle = Easy::new();
     handle.url("https://slack.com/api/users.list").unwrap();
@@ -31,7 +31,7 @@ pub fn get_user_list() -> Result<()> {
     let response = handle.response_code().unwrap();
     match response {
         200 => {
-            println!("{}", response);
+            // println!("{}", response);
         },
         _ => {
             println!("Error");
@@ -40,7 +40,20 @@ pub fn get_user_list() -> Result<()> {
     
     // Parse response
     let json_rsp: Value = serde_json::from_slice(&rsp).unwrap();
-    println!("{}", json_rsp);
 
-    Ok(())
+    Ok(parse_user_list(&json_rsp).expect("parse user list expect"))
+}
+
+fn parse_user_list(json_rsp: &Value) -> Result<Vec<User>> {
+    let members = json_rsp["members"].as_array().unwrap();
+    let users = members.iter().map(|member| {
+        let id = member["id"].as_str().unwrap();
+        let name = member["name"].as_str().unwrap();
+        User{
+            id: id.to_string(),
+            name: name.to_string(),
+        }
+    }).collect::<Vec<User>>();
+
+    Ok(users)
 }
