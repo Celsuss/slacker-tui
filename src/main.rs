@@ -30,6 +30,8 @@ mod messages;
 mod input_reciever;
 mod slack_interface;
 
+// use crate::slack_interface::{user_interface, channel_interface};
+
 // Input events
 pub enum Event<T> { 
     Input(T),
@@ -39,12 +41,11 @@ pub enum Event<T> {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = crate::parse_config().expect("Parse config expect");
-    let oauth_token = config["oauth_token"].as_str().expect("OAuth token is not a string");
-    // let user_list = slack_interface::get_user_list(oauth_token).expect("Get user list expect");
-    let channel_list = slack_interface::get_channel_list(oauth_token).expect("Get channel list expect");
-
-    return Ok(());
+    // let config = crate::parse_config().expect("Parse config expect");
+    // let oauth_token = config["oauth_token"].as_str().expect("OAuth token is not a string");
+    // let user_list = user_interface::get_user_list(oauth_token).expect("Get user list expect");
+    // let channel_list = channel_interface::get_channel_list(oauth_token).expect("Get channel list expect");
+    // return Ok(());
 
 
     // enable_raw_mode().expect("can run in raw mode");

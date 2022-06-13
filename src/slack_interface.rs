@@ -2,16 +2,17 @@ use curl::easy::{Easy, List};
 use serde_json::{Result, Value};
 
 pub mod user_interface;
+pub mod channel_interface;
 
 // pub struct User{
 //     id: String,
 //     pub name: String,
 // }
 
-pub fn get(token: &str, url: &str) -> Result<(Value)> {
+pub fn get(url: &str, token: &str) -> Result<(Value)> {
     // Send request to Slack API
     let mut handle = Easy::new();
-    handle.url("https://slack.com/api/users.list").unwrap();
+    handle.url(url).unwrap();
 
     let mut list = List::new();
     list.append(&("Authorization: Bearer ".to_string() + token)).unwrap();

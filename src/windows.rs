@@ -24,7 +24,7 @@ use crate::channels;
 use crate::home;
 use crate::messages;
 use crate::input_reciever;
-use crate::slack_interface::{user_interface};
+use crate::slack_interface::{user_interface, channel_interface};
 
 
 #[derive(Copy, Clone, Debug)]
@@ -64,6 +64,7 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
     let config = crate::parse_config().expect("Parse config expect");
     let oauth_token = config["oauth_token"].as_str().expect("OAuth token is not a string");
     let user_list = user_interface::get_user_list(oauth_token).expect("Get user list expect");
+    let channel_list = channel_interface::get_channel_list(oauth_token).expect("Get channel list expect");
 
     let window_titles = vec![
         "Home",
@@ -115,7 +116,7 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
                 .split(root_chunks[0]);
 
             rect.render_stateful_widget(channels::render_teams(&team_list_state, matches!(active_window_item, MenuItem::Teams)), channels_chunks[0], &mut team_list_state);
-            rect.render_stateful_widget(channels::render_channels(&channel_list_state, matches!(active_window_item, MenuItem::Channels)), channels_chunks[1], &mut channel_list_state);
+            rect.render_stateful_widget(channels::render_channels(&channel_list, &channel_list_state, matches!(active_window_item, MenuItem::Channels)), channels_chunks[1], &mut channel_list_state);
             rect.render_stateful_widget(channels::render_users(&user_list, &user_list_state, matches!(active_window_item, MenuItem::Users)), channels_chunks[2], &mut team_list_state);;
 
 

@@ -20,7 +20,7 @@ struct Channel {
     unread_count: usize,
 }
 
-pub fn render_channels<'a>(channel_list_state: &ListState, is_active: bool) -> List<'a> {
+pub fn render_channels<'a>(channel_list: &Vec<String>, channel_list_state: &ListState, is_active: bool) -> List<'a> {
     let channels = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::default().fg(if is_active { Color::Magenta } else { Color::White }))
@@ -28,22 +28,10 @@ pub fn render_channels<'a>(channel_list_state: &ListState, is_active: bool) -> L
         .title("Channels")
         .border_type(BorderType::Plain);
 
-    // TODO: Get channel list
-    let channel_list = vec![
-        Channel {
-            name: "general".to_string(),
-            unread_count: 0,
-        },
-        Channel {
-            name: "random".to_string(),
-            unread_count: 0,
-        },
-    ];
-
     let items: Vec<_> = channel_list.iter()
         .map(|channel| {
             ListItem::new(Spans::from(vec![Span::styled(
-                channel.name.clone(),
+                channel.clone(),
                 Style::default(),
             )]))
         }).collect();

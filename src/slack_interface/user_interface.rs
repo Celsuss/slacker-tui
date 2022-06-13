@@ -10,6 +10,7 @@ pub struct User{
 
 pub fn get_user_list(token: &str) -> Result<Vec<User>> {
     // Send request to Slack API
+    // TODO: Handle errors
     let json_res = slack_interface::get("https://slack.com/api/users.list", token).expect("Get user list expect");
     let json_res_parsed = parse_user_list(&json_res).expect("parse user list expect");
 
