@@ -4,30 +4,72 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 use tui::{
-    Terminal,
+    Terminal, widgets::ListState,
 };
 use std::sync::mpsc;
 
 use crate::windows::MenuItem;
 use crate::{Event};
 
-pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, active_window_item: &mut MenuItem) -> Result<Event<()>, Box<dyn std::error::Error>>{
+pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, active_window_item: &mut MenuItem, focus_window_item: &mut MenuItem,
+                    channel_list_state: &mut ListState, user_list_state: &mut ListState) -> Result<Event<()>, Box<dyn std::error::Error>>{
      // Receive event from input thread
      match rx.recv()? {
         Event::Input(event) => match event {
+            // Quit software is user presses 'q'
             KeyEvent{ code: KeyCode::Char('q'), modifiers: KeyModifiers::NONE} => {
                 return Ok(Event::Quit);
             }
+            // Select window to focus on
+            KeyEvent { code: KeyCode::Enter, modifiers: KeyModifiers::NONE } => {
+                focus_window_item.clone_from(active_window_item);
+            }
+            // Deselect focused window
+            KeyEvent { code: KeyCode::Esc, modifiers: KeyModifiers::NONE } => {
+                focus_window_item.clone_from(&MenuItem::None);
+            }
+
+            // Handle movement between windows and lists
             KeyEvent{ code: KeyCode::Up, modifiers: KeyModifiers::NONE} => {
-                move_up(active_window_item);           
+                match focus_window_item {
+                    MenuItem::Channels => {
+                        update_list_state(channel_list_state, KeyCode::Up);
+                    },
+                    MenuItem::Users => {
+                        update_list_state(user_list_state, KeyCode::Up);
+                    },
+                    _ => {}
+                }
+                
+                // *focus_window_item = MenuItem::None;
+                if matches!(focus_window_item, MenuItem::None) {
+                    // *active_window_item = MenuItem::None;
+                    move_up(active_window_item);           
+                }
             }
             KeyEvent{ code: KeyCode::Right, modifiers: KeyModifiers::NONE} => {
+                *focus_window_item = MenuItem::None;
                 move_right(active_window_item);
             }
             KeyEvent{ code: KeyCode::Down, modifiers: KeyModifiers::NONE} => {
-                move_down(active_window_item);
+                match focus_window_item {
+                    MenuItem::Channels => {
+                        update_list_state(channel_list_state, KeyCode::Down);
+                    },
+                    MenuItem::Users => {
+                        update_list_state(user_list_state, KeyCode::Down);
+                    },
+                    _ => {}
+                }
+
+                // *focus_window_item = MenuItem::None;
+                if matches!(focus_window_item, MenuItem::None) {
+                    // *active_window_item = MenuItem::None;
+                    move_down(active_window_item);
+                }
             }
             KeyEvent{ code: KeyCode::Left, modifiers: KeyModifiers::NONE} => {
+                *focus_window_item = MenuItem::None;
                 move_left(active_window_item);
             }
             _ => {}
@@ -35,6 +77,23 @@ pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, act
         _ => {},
     }
     Ok(Event::Tick)
+}
+
+fn update_list_state(list_state: &mut ListState, code: KeyCode){
+    // TODO: Make sure to not select an object outside of list size
+    match code {
+        KeyCode::Up => {
+            if let Some(selected) = list_state.selected() {
+                list_state.select(Some(selected - 1));
+            }
+        }
+        KeyCode::Down => {
+            if let Some(selected) = list_state.selected() {
+                list_state.select(Some(selected + 1));
+            }
+        }
+        _ => {}
+    }
 }
 
 fn move_up(active_window_item: &mut MenuItem) {

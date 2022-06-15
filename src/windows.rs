@@ -27,8 +27,9 @@ use crate::input_reciever;
 use crate::slack_interface::{user_interface, channel_interface};
 
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum MenuItem {
+    None,
     Home,
     Channels,
     Teams,
@@ -43,13 +44,14 @@ pub enum MenuItem {
 impl From<MenuItem> for usize {
     fn from(item: MenuItem) -> usize {
         match item {
-            MenuItem::Home => 0,
+            MenuItem::None => 0,
             MenuItem::Messages => 1,
             MenuItem::Input => 2,
             MenuItem::Users => 3,
             MenuItem::Channels => 4,
             MenuItem::Teams => 5,
             MenuItem::Search => 6,
+            MenuItem::Home => 7,
         }
     }
 }
@@ -77,7 +79,7 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
     ];
 
     let mut active_window_item = MenuItem::Channels;
-    let mut focused_window_item = MenuItem::Channels;
+    let mut focus_window_item = MenuItem::None;
 
     let mut channel_list_state = ListState::default();
     let mut team_list_state = ListState::default();
@@ -115,9 +117,18 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
                 )
                 .split(root_chunks[0]);
 
-            rect.render_stateful_widget(channels::render_teams(&team_list_state, matches!(active_window_item, MenuItem::Teams)), channels_chunks[0], &mut team_list_state);
-            rect.render_stateful_widget(channels::render_channels(&channel_list, &channel_list_state, matches!(active_window_item, MenuItem::Channels)), channels_chunks[1], &mut channel_list_state);
-            rect.render_stateful_widget(channels::render_users(&user_list, &user_list_state, matches!(active_window_item, MenuItem::Users)), channels_chunks[2], &mut team_list_state);;
+            rect.render_stateful_widget(
+                channels::render_teams(&team_list_state,matches!(active_window_item, MenuItem::Teams), matches!(focus_window_item, MenuItem::Teams)),
+                channels_chunks[0],
+                &mut team_list_state);
+            rect.render_stateful_widget(
+                channels::render_channels(&channel_list, &channel_list_state, matches!(active_window_item, MenuItem::Channels), matches!(focus_window_item, MenuItem::Channels)),
+                channels_chunks[1],
+                &mut channel_list_state);
+            rect.render_stateful_widget(
+                channels::render_users(&user_list, &user_list_state, matches!(active_window_item, MenuItem::Users), matches!(focus_window_item, MenuItem::Users)),
+                channels_chunks[2],
+                &mut team_list_state);;
 
 
             // Render messages and messages input
@@ -134,7 +145,11 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
         })?;
 
         // TODO: Handle exit event
-        let event = input_reciever::recieve_input(rx, &mut active_window_item).expect("Input expect");
+        let event = input_reciever::recieve_input(rx,
+            &mut active_window_item, 
+            &mut focus_window_item,
+            &mut channel_list_state,
+            &mut user_list_state).expect("Input expect");
         if matches!(event, Event::Quit){
             disable_raw_mode()?;
             terminal.show_cursor()?;

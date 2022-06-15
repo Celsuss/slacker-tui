@@ -20,10 +20,23 @@ struct Channel {
     unread_count: usize,
 }
 
-pub fn render_channels<'a>(channel_list: &Vec<String>, channel_list_state: &ListState, is_active: bool) -> List<'a> {
+fn get_border_color(is_active: bool, is_focus: bool) -> Color {
+    if is_focus{
+        return Color::Cyan;
+    }
+    else if is_active {
+        return Color::Magenta;
+    } else {
+        return Color::White;
+    }
+}
+
+
+pub fn render_channels<'a>(channel_list: &Vec<String>, channel_list_state: &ListState, is_active: bool, is_focus: bool) -> List<'a> {
+    let border_color = get_border_color(is_active, is_focus);
     let channels = Block::default()
         .borders(Borders::ALL)
-        .border_style(Style::default().fg(if is_active { Color::Magenta } else { Color::White }))
+        .border_style(Style::default().fg(border_color))
         .style(Style::default().fg(Color::White))
         .title("Channels")
         .border_type(BorderType::Plain);
@@ -55,10 +68,11 @@ pub fn render_channels<'a>(channel_list: &Vec<String>, channel_list_state: &List
     list
 }
 
-pub fn render_teams(team_list_state: &ListState, is_active: bool) -> List<'static> {
+pub fn render_teams(team_list_state: &ListState, is_active: bool, is_focus: bool) -> List<'static> {
+    let border_color = get_border_color(is_active, is_focus);
     let teams_block = Block::default()
         .borders(Borders::ALL)
-        .border_style(Style::default().fg(if is_active { Color::Magenta } else { Color::White }))
+        .border_style(Style::default().fg(border_color))
         .style(Style::default().fg(Color::White))
         .title("Teams")
         .border_type(BorderType::Plain);
@@ -96,10 +110,11 @@ pub fn render_teams(team_list_state: &ListState, is_active: bool) -> List<'stati
     list
 }
 
-pub fn render_users(user_list: &Vec<User>, user_list_state: &ListState, is_active: bool) -> List<'static> {
+pub fn render_users(user_list: &Vec<User>, user_list_state: &ListState, is_active: bool, is_focus: bool) -> List<'static> {
+    let border_color = get_border_color(is_active, is_focus);
     let users_block = Block::default()
         .borders(Borders::ALL)
-        .border_style(Style::default().fg(if is_active { Color::Magenta } else { Color::White }))
+        .border_style(Style::default().fg(border_color))
         .style(Style::default().fg(Color::White))
         .title("Users")
         .border_type(BorderType::Plain);
