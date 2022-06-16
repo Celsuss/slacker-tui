@@ -118,17 +118,25 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
                 .split(root_chunks[0]);
 
             rect.render_stateful_widget(
-                channels::render_teams(&team_list_state,matches!(active_window_item, MenuItem::Teams), matches!(focus_window_item, MenuItem::Teams)),
+                channels::render_teams(&team_list_state,
+                    matches!(active_window_item, MenuItem::Teams), 
+                    matches!(focus_window_item, MenuItem::Teams)),
                 channels_chunks[0],
                 &mut team_list_state);
             rect.render_stateful_widget(
-                channels::render_channels(&channel_list, &channel_list_state, matches!(active_window_item, MenuItem::Channels), matches!(focus_window_item, MenuItem::Channels)),
+                channels::render_channels(&channel_list, 
+                    &channel_list_state, 
+                    matches!(active_window_item, MenuItem::Channels), 
+                    matches!(focus_window_item, MenuItem::Channels)),
                 channels_chunks[1],
                 &mut channel_list_state);
             rect.render_stateful_widget(
-                channels::render_users(&user_list, &user_list_state, matches!(active_window_item, MenuItem::Users), matches!(focus_window_item, MenuItem::Users)),
+                channels::render_users(&user_list, 
+                    &user_list_state, 
+                    matches!(active_window_item, MenuItem::Users), 
+                    matches!(focus_window_item, MenuItem::Users)),
                 channels_chunks[2],
-                &mut team_list_state);;
+                &mut user_list_state);
 
 
             // Render messages and messages input

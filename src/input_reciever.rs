@@ -38,13 +38,10 @@ pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, act
                     MenuItem::Users => {
                         update_list_state(user_list_state, KeyCode::Up);
                     },
+                    MenuItem::None => {
+                        move_up(active_window_item);
+                    }
                     _ => {}
-                }
-                
-                // *focus_window_item = MenuItem::None;
-                if matches!(focus_window_item, MenuItem::None) {
-                    // *active_window_item = MenuItem::None;
-                    move_up(active_window_item);           
                 }
             }
             KeyEvent{ code: KeyCode::Right, modifiers: KeyModifiers::NONE} => {
@@ -59,13 +56,10 @@ pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, act
                     MenuItem::Users => {
                         update_list_state(user_list_state, KeyCode::Down);
                     },
+                    MenuItem::None => {
+                        move_down(active_window_item);
+                    }
                     _ => {}
-                }
-
-                // *focus_window_item = MenuItem::None;
-                if matches!(focus_window_item, MenuItem::None) {
-                    // *active_window_item = MenuItem::None;
-                    move_down(active_window_item);
                 }
             }
             KeyEvent{ code: KeyCode::Left, modifiers: KeyModifiers::NONE} => {
