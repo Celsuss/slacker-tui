@@ -157,7 +157,9 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
             &mut active_window_item, 
             &mut focus_window_item,
             &mut channel_list_state,
-            &mut user_list_state).expect("Input expect");
+            channel_list.len(),
+            &mut user_list_state,
+            user_list.len()).expect("Input expect");
         if matches!(event, Event::Quit){
             disable_raw_mode()?;
             terminal.show_cursor()?;

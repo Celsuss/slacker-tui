@@ -12,7 +12,7 @@ use crate::windows::MenuItem;
 use crate::{Event};
 
 pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, active_window_item: &mut MenuItem, focus_window_item: &mut MenuItem,
-                    channel_list_state: &mut ListState, user_list_state: &mut ListState) -> Result<Event<()>, Box<dyn std::error::Error>>{
+                    channel_list_state: &mut ListState, channel_list_size: usize, user_list_state: &mut ListState, user_list_size: usize) -> Result<Event<()>, Box<dyn std::error::Error>>{
      // Receive event from input thread
      match rx.recv()? {
         Event::Input(event) => match event {
@@ -33,10 +33,10 @@ pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, act
             KeyEvent{ code: KeyCode::Up, modifiers: KeyModifiers::NONE} => {
                 match focus_window_item {
                     MenuItem::Channels => {
-                        update_list_state(channel_list_state, KeyCode::Up);
+                        update_list_state(channel_list_state, channel_list_size, KeyCode::Up);
                     },
                     MenuItem::Users => {
-                        update_list_state(user_list_state, KeyCode::Up);
+                        update_list_state(user_list_state, user_list_size, KeyCode::Up);
                     },
                     MenuItem::None => {
                         move_up(active_window_item);
@@ -51,10 +51,10 @@ pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, act
             KeyEvent{ code: KeyCode::Down, modifiers: KeyModifiers::NONE} => {
                 match focus_window_item {
                     MenuItem::Channels => {
-                        update_list_state(channel_list_state, KeyCode::Down);
+                        update_list_state(channel_list_state, channel_list_size, KeyCode::Down);
                     },
                     MenuItem::Users => {
-                        update_list_state(user_list_state, KeyCode::Down);
+                        update_list_state(user_list_state, user_list_size, KeyCode::Down);
                     },
                     MenuItem::None => {
                         move_down(active_window_item);
@@ -73,17 +73,21 @@ pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, act
     Ok(Event::Tick)
 }
 
-fn update_list_state(list_state: &mut ListState, code: KeyCode){
+fn update_list_state(list_state: &mut ListState, list_size: usize, code: KeyCode){
     // TODO: Make sure to not select an object outside of list size
     match code {
         KeyCode::Up => {
             if let Some(selected) = list_state.selected() {
-                list_state.select(Some(selected - 1));
+                if selected > 0 {
+                    list_state.select(Some(selected - 1));
+                }
             }
         }
         KeyCode::Down => {
             if let Some(selected) = list_state.selected() {
-                list_state.select(Some(selected + 1));
+                if selected < list_size -1  {
+                    list_state.select(Some(selected + 1));
+                }
             }
         }
         _ => {}
