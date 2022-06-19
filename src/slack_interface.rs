@@ -3,19 +3,35 @@ use serde_json::{Result, Value};
 
 pub mod user_interface;
 pub mod channel_interface;
+pub mod messages_interface;
 
 // pub struct User{
 //     id: String,
 //     pub name: String,
 // }
 
-pub fn get(url: &str, token: &str) -> Result<(Value)> {
+// pub struct APICall{
+//     url: String,
+//     token: str
+// }
+
+pub fn get(url: &str, token: &str, parameters: Option<Vec<String>>) -> Result<(Value)> {
     // Send request to Slack API
     let mut handle = Easy::new();
     handle.url(url).unwrap();
 
     let mut list = List::new();
     list.append(&("Authorization: Bearer ".to_string() + token)).unwrap();
+
+    match parameters{
+        Some(parameters) => {
+            for p in parameters{
+                list.append(&(p));
+            }
+        },
+        None => {},
+    }
+
     handle.http_headers(list).unwrap(); 
     
     // TODO: Handle errors

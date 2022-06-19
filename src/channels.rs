@@ -13,12 +13,7 @@ use tui::{
     Terminal,
 };
 
-use crate::slack_interface::{user_interface::User};
-
-struct Channel {
-    name: String,
-    unread_count: usize,
-}
+use crate::slack_interface::{user_interface::User, channel_interface::Channel};
 
 fn get_border_color(is_active: bool, is_focus: bool) -> Color {
     if is_focus{
@@ -32,7 +27,7 @@ fn get_border_color(is_active: bool, is_focus: bool) -> Color {
 }
 
 
-pub fn render_channels<'a>(channel_list: &Vec<String>, channel_list_state: &ListState, is_active: bool, is_focus: bool) -> List<'a> {
+pub fn render_channels<'a>(channel_list: &Vec<Channel>, channel_list_state: &ListState, is_active: bool, is_focus: bool) -> List<'a> {
     let border_color = get_border_color(is_active, is_focus);
     let channels = Block::default()
         .borders(Borders::ALL)
@@ -44,7 +39,7 @@ pub fn render_channels<'a>(channel_list: &Vec<String>, channel_list_state: &List
     let items: Vec<_> = channel_list.iter()
         .map(|channel| {
             ListItem::new(Spans::from(vec![Span::styled(
-                channel.clone(),
+                channel.name.clone(),
                 Style::default(),
             )]))
         }).collect();
