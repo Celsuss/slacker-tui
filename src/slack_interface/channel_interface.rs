@@ -10,7 +10,7 @@ pub struct Channel{
 
 pub fn get_channel_list(token: &str) -> Result<Vec<Channel>> {
     // Send request to Slack API
-    let rsp = slack_interface::get("https://slack.com/api/conversations.list", token, None).expect("Get channel list expect");
+    let rsp = slack_interface::get("https://slack.com/api/conversations.list", token).expect("Get channel list expect");
     let json_res = parse_channel_list(&rsp).expect("parse channel list expect");
 
     Ok(json_res)

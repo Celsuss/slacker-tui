@@ -4,37 +4,38 @@ use crate::slack_interface;
 
 pub struct Message {
     text: String,
-    channel: String,
+    // channel: String,
     username: String,
-    ts: u64,
+    message_type: String,
+    ts: String,
     // icon_emoji: String,
     // attachments: Vec<attachment>,
 }
 
 pub fn get_channel_messages(channel_id: &str, oauth_token: &str) -> Result<Vec<Message>> {
-    let url = "https://slack.com/api/channels.history";
-    let mut params: Vec<String> = Vec::new();
-    params.push(channel_id.to_string());
-    let json_res = slack_interface::get(url, oauth_token, Some(params)).expect("Get channel messages expect");
+    let url = "https://slack.com/api/conversations.history?channel=".to_string() + channel_id;
+    let json_res = slack_interface::get(&url, oauth_token).expect("Get channel messages expect");
     let res = parse_messages(&json_res).expect("parse messages expect");
 
     Ok(res)
 }
 
 fn parse_messages(json_rsp: &Value) -> Result<Vec<Message>>{
+    println!("{:?}", json_rsp);
+
     let messages = json_rsp["messages"].as_array().unwrap();
     let messages = messages.iter().map(|message| {
         let text = message["text"].as_str().unwrap();
-        let channel = message["channel"].as_str().unwrap();
-        let username = message["username"].as_str().unwrap();
+        let username = message["user"].as_str().unwrap();
         let ts = message["ts"].as_str().unwrap();
+        let message_type = message["type"].as_str().unwrap();
         // let icon_emoji = message["icon_emoji"].as_str().unwrap();
         // let attachments = message["attachments"].as_array().unwrap();
         Message{
             text: text.to_string(),
-            channel: channel.to_string(),
             username: username.to_string(),
-            ts: ts.to_string().parse::<u64>().unwrap(),
+            ts: ts.to_string(),
+            message_type: message_type.to_string(),
             // icon_emoji: icon_emoji.to_string(),
             // attachments: attachments,
         }

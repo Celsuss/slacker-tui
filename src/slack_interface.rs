@@ -15,22 +15,13 @@ pub mod messages_interface;
 //     token: str
 // }
 
-pub fn get(url: &str, token: &str, parameters: Option<Vec<String>>) -> Result<(Value)> {
+pub fn get(url: &str, token: &str) -> Result<(Value)> {
     // Send request to Slack API
     let mut handle = Easy::new();
     handle.url(url).unwrap();
 
     let mut list = List::new();
     list.append(&("Authorization: Bearer ".to_string() + token)).unwrap();
-
-    match parameters{
-        Some(parameters) => {
-            for p in parameters{
-                list.append(&(p));
-            }
-        },
-        None => {},
-    }
 
     handle.http_headers(list).unwrap(); 
     
