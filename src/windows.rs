@@ -19,12 +19,12 @@ use tui::{
     Terminal,
 };
 
-use crate::{Event};
+use crate::{Event, messages::Conversation};
 use crate::channels;
 use crate::home;
 use crate::messages;
 use crate::input_reciever;
-use crate::slack_interface::{user_interface, channel_interface};
+use crate::slack_interface::{user_interface, channel_interface, messages_interface};
 
 
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
@@ -67,6 +67,9 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
     let oauth_token = config["oauth_token"].as_str().expect("OAuth token is not a string");
     let user_list = user_interface::get_user_list(oauth_token).expect("Get user list expect");
     let channel_list = channel_interface::get_channel_list(oauth_token).expect("Get channel list expect");
+
+    let conversation = Conversation::new(channel_list[0].name.to_string(), channel_list[0].id.to_string());
+    let messages_list = messages_interface::get_channel_messages(&channel_list[0].id, oauth_token).expect("Get messages list expect");
 
     let window_titles = vec![
         "Home",
@@ -148,7 +151,7 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
                         )
                         .split(root_chunks[1]);
 
-            rect.render_widget(messages::render_messages(), messages_chunks[0]);
+            rect.render_widget(conversation.render_messages(&messages_list), messages_chunks[0]);
             rect.render_widget(messages::render_messages_input(matches!(active_window_item, MenuItem::Input)), messages_chunks[1]);
         })?;
 

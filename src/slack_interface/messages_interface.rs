@@ -3,11 +3,11 @@ use serde_json::{Result, Value};
 use crate::slack_interface;
 
 pub struct Message {
-    text: String,
+    pub text: String,
     // channel: String,
-    username: String,
-    message_type: String,
-    ts: String,
+    pub username: String,
+    pub message_type: String,
+    pub ts: String,
     // icon_emoji: String,
     // attachments: Vec<attachment>,
 }

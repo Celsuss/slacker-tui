@@ -13,73 +13,70 @@ use tui::{
     Terminal,
 };
 
-struct Message{
-    name: String,
-    message: String,
-    date: String,
-    time: String,
+use crate::slack_interface::{messages_interface::{self, Message}};
+
+pub struct Conversation{
+    conversation_name: String,
+    conversation_id: String,
 }
 
-pub fn render_messages<'a>() -> Paragraph<'a>{
-    // TODO: Get messages
-    // Get messages
-    let message_list = vec![
-        Message{
-            name: "test name".to_string(),
-            message: "test message".to_string(),
-            date: "test date".to_string(),
-            time: "test time".to_string(),
-        },
-        Message{
-            name: "test name 2".to_string(),
-            message: "test message 2".to_string(),
-            date: "test date 2".to_string(),
-            time: "test time 2".to_string(),
-        },
-    ];
+impl Conversation{
+    pub fn new(conversation_name: String, conversation_id: String) -> Conversation{
+        Conversation{
+            conversation_name: conversation_name,
+            conversation_id: conversation_id,
+        }
+    }
 
-    // Message block
-    let messages_block = Block::default()
-        .borders(Borders::ALL)
-        .style(Style::default().fg(Color::White))
-        .title("Messages")
-        .border_type(BorderType::Plain);
+    pub fn set_conversation_name_and_id(&mut self, name: String, id: String){
+        self.conversation_name = name;
+        self.conversation_id = id;
+    }
 
-    let items: Vec<_> = message_list.iter()
-        .map(|message| 
-            Spans::from(vec![
-                Span::raw("["),
-                Span::styled(
-                    message.time.clone(),
-                    Style::default()
-                        .fg(Color::Yellow)
-                        .add_modifier(Modifier::BOLD),
-                ),
-                Span::raw("]"),
-                Span::raw(" "),
-                Span::raw("<"),
-                Span::styled(
-                    message.name.clone(),
-                    Style::default()
-                        .fg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD),
-                ),
-                Span::raw(">"),
-                Span::raw(" "),
-                Span::styled(
-                    message.message.clone(),
-                    Style::default(),
-                ),
-            ])
-        ).collect();
-
-    let paragraph = Paragraph::new(items)
-        .block(messages_block)
-        .alignment(Alignment::Left)
-        .wrap(Wrap { trim: true });
-
-    paragraph
-
+    pub fn render_messages<'a>(&self, messages: &Vec<Message>) -> Paragraph<'a>{
+        // Message block
+        let messages_block = Block::default()
+            .borders(Borders::ALL)
+            .style(Style::default().fg(Color::White))
+            .title("Messages")
+            .border_type(BorderType::Plain);
+    
+        let items: Vec<_> = messages.iter().rev()
+            .map(|message| 
+                Spans::from(vec![
+                    Span::raw("["),
+                    Span::styled(
+                        message.ts.clone(), // TODO: Format time
+                        Style::default()
+                            .fg(Color::Yellow)
+                            .add_modifier(Modifier::BOLD),
+                    ),
+                    Span::raw("]"),
+                    Span::raw(" "),
+                    Span::raw("<"),
+                    Span::styled(
+                        message.username.clone(),
+                        Style::default()
+                            .fg(Color::Cyan)
+                            .add_modifier(Modifier::BOLD),
+                    ),
+                    Span::raw(">"),
+                    Span::raw(" "),
+                    Span::styled(
+                        message.text.clone(),
+                        Style::default(),
+                    ),
+                ])
+            ).collect();
+    
+        let paragraph = Paragraph::new(items)
+            .block(messages_block)
+            .alignment(Alignment::Left)
+            .wrap(Wrap { trim: true });
+    
+        paragraph
+    
+    }
 }
 
 pub fn render_messages_input<'a>(is_active: bool) -> Paragraph<'a>{
