@@ -28,45 +28,23 @@ pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, act
             KeyEvent { code: KeyCode::Esc, modifiers: KeyModifiers::NONE } => {
                 focus_window_item.clone_from(&MenuItem::None);
             }
+            _ => {
+                match focus_window_item {
+                    MenuItem::Channels => {
+                        update_list_state(channel_list_state, channel_list_size, event.code);
+                    },
+                    MenuItem::Users => {
+                        update_list_state(user_list_state, user_list_size, event.code);
+                    },
+                    _ => {
+                        navigate_windows(event.code, active_window_item);
+                    }
+                }
+            }
 
-            // Handle movement between windows and lists
-            KeyEvent{ code: KeyCode::Up, modifiers: KeyModifiers::NONE} => {
-                match focus_window_item {
-                    MenuItem::Channels => {
-                        update_list_state(channel_list_state, channel_list_size, KeyCode::Up);
-                    },
-                    MenuItem::Users => {
-                        update_list_state(user_list_state, user_list_size, KeyCode::Up);
-                    },
-                    MenuItem::None => {
-                        move_up(active_window_item);
-                    }
-                    _ => {}
-                }
-            }
-            KeyEvent{ code: KeyCode::Right, modifiers: KeyModifiers::NONE} => {
-                *focus_window_item = MenuItem::None;
-                move_right(active_window_item);
-            }
-            KeyEvent{ code: KeyCode::Down, modifiers: KeyModifiers::NONE} => {
-                match focus_window_item {
-                    MenuItem::Channels => {
-                        update_list_state(channel_list_state, channel_list_size, KeyCode::Down);
-                    },
-                    MenuItem::Users => {
-                        update_list_state(user_list_state, user_list_size, KeyCode::Down);
-                    },
-                    MenuItem::None => {
-                        move_down(active_window_item);
-                    }
-                    _ => {}
-                }
-            }
-            KeyEvent{ code: KeyCode::Left, modifiers: KeyModifiers::NONE} => {
-                *focus_window_item = MenuItem::None;
-                move_left(active_window_item);
-            }
-            _ => {}
+            
+            
+            
         },
         _ => {},
     }
@@ -74,7 +52,6 @@ pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, act
 }
 
 fn update_list_state(list_state: &mut ListState, list_size: usize, code: KeyCode){
-    // TODO: Make sure to not select an object outside of list size
     match code {
         KeyCode::Up => {
             if let Some(selected) = list_state.selected() {
@@ -89,6 +66,24 @@ fn update_list_state(list_state: &mut ListState, list_size: usize, code: KeyCode
                     list_state.select(Some(selected + 1));
                 }
             }
+        }
+        _ => {}
+    }
+}
+
+fn navigate_windows(code: KeyCode, active_window_item: &mut MenuItem){
+    match code{
+        KeyCode::Up => {
+            move_up(active_window_item);
+        }
+        KeyCode::Down => {
+            move_down(active_window_item);
+        }
+        KeyCode::Left => {
+            move_left(active_window_item);
+        }
+        KeyCode::Right => {
+            move_right(active_window_item);
         }
         _ => {}
     }
