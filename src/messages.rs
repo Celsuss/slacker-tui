@@ -38,7 +38,7 @@ impl Conversation{
         let messages_block = Block::default()
             .borders(Borders::ALL)
             .style(Style::default().fg(Color::White))
-            .title("Messages")
+            .title(format!("Messages - {}", &self.conversation_name))
             .border_type(BorderType::Plain);
     
         let items: Vec<_> = messages.iter().rev()
