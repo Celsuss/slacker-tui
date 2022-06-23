@@ -79,22 +79,11 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
 
     let config = crate::parse_config().expect("Parse config expect");
     let oauth_token = config["oauth_token"].as_str().expect("OAuth token is not a string");
-    let user_list = user_interface::get_user_list(oauth_token).expect("Get user list expect");
-    let channel_list = channel_interface::get_channel_list(oauth_token).expect("Get channel list expect");
-
-    let conversation = Conversation::new(channel_list[0].name.to_string(), channel_list[0].id.to_string());
-    let messages_list = messages_interface::get_channel_messages(&channel_list[0].id, oauth_token).expect("Get messages list expect");
 
     let mut active_window_item = MenuItem::Channels;
     let mut focus_window_item = MenuItem::None;
 
-    // let mut channel_list_state = ListState::default();
-    // let mut team_list_state = ListState::default();
-    // let mut user_list_state = ListState::default();
-    // channel_list_state.select(Some(0));
-    // team_list_state.select(Some(0));
-    // user_list_state.select(Some(0));
-
+    // Create lists for channels and users
     let mut team_list = ConversationList{
         list_state: ListState::default(),
         conversation_list: Vec::from(["test team"])
@@ -112,6 +101,9 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
         conversation_list: user_interface::get_user_list(oauth_token).expect("Get user list expect")
     };
     user_list.list_state.select(Some(0));
+
+    let conversation = Conversation::new(channel_list.conversation_list[0].name.to_string(), channel_list.conversation_list[0].id.to_string());
+    let messages_list = messages_interface::get_channel_messages(&channel_list.conversation_list[0].id, oauth_token).expect("Get messages list expect");
 
     loop {
         // Windows layout

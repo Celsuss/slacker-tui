@@ -21,8 +21,6 @@ pub fn get_channel_messages(channel_id: &str, oauth_token: &str) -> Result<Vec<M
 }
 
 fn parse_messages(json_rsp: &Value) -> Result<Vec<Message>>{
-    println!("{:?}", json_rsp);
-
     let messages = json_rsp["messages"].as_array().unwrap();
     let messages = messages.iter().map(|message| {
         let text = message["text"].as_str().unwrap();
