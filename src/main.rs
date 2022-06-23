@@ -37,7 +37,8 @@ pub enum Event<T> {
     Input(T),
     Tick,
     Quit,
-    Change(T)
+    Change(T),
+    ChangeConversation(T),
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

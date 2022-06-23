@@ -16,13 +16,10 @@ pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, act
      // Receive event from input thread
      match rx.recv()? {
         Event::Input(event) => match event {
+            // Priority key presses
             // Quit software is user presses 'q'
             KeyEvent{ code: KeyCode::Char('q'), modifiers: KeyModifiers::NONE} => {
                 return Ok(Event::Quit);
-            }
-            // Select window to focus on
-            KeyEvent { code: KeyCode::Enter, modifiers: KeyModifiers::NONE } => {
-                focus_window_item.clone_from(active_window_item);
             }
             // Deselect focused window
             KeyEvent { code: KeyCode::Esc, modifiers: KeyModifiers::NONE } => {
@@ -37,7 +34,7 @@ pub fn recieve_input(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>, act
                         update_list_state(user_list_state, user_list_size, event.code);
                     },
                     _ => {
-                        navigate_windows(event.code, active_window_item);
+                        navigate_windows(event.code, active_window_item, focus_window_item);
                     }
                 }
             }
@@ -71,7 +68,11 @@ fn update_list_state(list_state: &mut ListState, list_size: usize, code: KeyCode
     }
 }
 
-fn navigate_windows(code: KeyCode, active_window_item: &mut MenuItem){
+fn update_conversation(list_state: &mut ListState){
+
+}
+
+fn navigate_windows(code: KeyCode, active_window_item: &mut MenuItem, focus_window_item: &mut MenuItem){
     match code{
         KeyCode::Up => {
             move_up(active_window_item);
@@ -84,6 +85,9 @@ fn navigate_windows(code: KeyCode, active_window_item: &mut MenuItem){
         }
         KeyCode::Right => {
             move_right(active_window_item);
+        }
+        KeyCode::Enter => {
+            focus_window_item.clone_from((active_window_item));
         }
         _ => {}
     }

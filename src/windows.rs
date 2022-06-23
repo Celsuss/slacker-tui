@@ -56,6 +56,20 @@ impl From<MenuItem> for usize {
     }
 }
 
+pub struct ConversationList<T>{
+    pub list_state: ListState,
+    pub conversation_list: Vec<T>,
+}
+
+// impl ConversationList<T> {
+//     pub fn new(conversation_list: Vec<T>) -> Self {
+//         ConversationList {
+//             list_state: ListState::default(),
+//             conversation_list,
+//         }
+//     }
+// }
+
 pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) -> Result<(), Box<dyn std::error::Error>>{
     let stdout = io::stdout();
     let backend = CrosstermBackend::new(stdout);
@@ -71,25 +85,33 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
     let conversation = Conversation::new(channel_list[0].name.to_string(), channel_list[0].id.to_string());
     let messages_list = messages_interface::get_channel_messages(&channel_list[0].id, oauth_token).expect("Get messages list expect");
 
-    let window_titles = vec![
-        "Home",
-        "Channels",
-        "Teams",
-        "Users",
-        "Messages",
-        "Input",
-        "Search",
-    ];
-
     let mut active_window_item = MenuItem::Channels;
     let mut focus_window_item = MenuItem::None;
 
-    let mut channel_list_state = ListState::default();
-    let mut team_list_state = ListState::default();
-    let mut user_list_state = ListState::default();
-    channel_list_state.select(Some(0));
-    team_list_state.select(Some(0));
-    user_list_state.select(Some(0));
+    // let mut channel_list_state = ListState::default();
+    // let mut team_list_state = ListState::default();
+    // let mut user_list_state = ListState::default();
+    // channel_list_state.select(Some(0));
+    // team_list_state.select(Some(0));
+    // user_list_state.select(Some(0));
+
+    let mut team_list = ConversationList{
+        list_state: ListState::default(),
+        conversation_list: Vec::from(["test team"])
+    };
+    team_list.list_state.select(Some(0));
+
+    let mut channel_list = ConversationList{
+        list_state: ListState::default(),
+        conversation_list: channel_interface::get_channel_list(oauth_token).expect("Get channel list expect")
+    };
+    channel_list.list_state.select(Some(0));
+
+    let mut user_list = ConversationList{
+        list_state: ListState::default(),
+        conversation_list: user_interface::get_user_list(oauth_token).expect("Get user list expect")
+    };
+    user_list.list_state.select(Some(0));
 
     loop {
         // Windows layout
@@ -121,25 +143,23 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
                 .split(root_chunks[0]);
 
             rect.render_stateful_widget(
-                channels::render_teams(&team_list_state,
+                channels::render_teams(&team_list.list_state,
                     matches!(active_window_item, MenuItem::Teams), 
                     matches!(focus_window_item, MenuItem::Teams)),
                 channels_chunks[0],
-                &mut team_list_state);
+                &mut team_list.list_state);
             rect.render_stateful_widget(
-                channels::render_channels(&channel_list, 
-                    &channel_list_state, 
+                channels::render_channels(&channel_list,
                     matches!(active_window_item, MenuItem::Channels), 
                     matches!(focus_window_item, MenuItem::Channels)),
                 channels_chunks[1],
-                &mut channel_list_state);
+                &mut channel_list.list_state);
             rect.render_stateful_widget(
-                channels::render_users(&user_list, 
-                    &user_list_state, 
+                channels::render_users(&user_list,
                     matches!(active_window_item, MenuItem::Users), 
                     matches!(focus_window_item, MenuItem::Users)),
                 channels_chunks[2],
-                &mut user_list_state);
+                &mut user_list.list_state);
 
 
             // Render messages and messages input
@@ -159,10 +179,10 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
         let event = input_reciever::recieve_input(rx,
             &mut active_window_item, 
             &mut focus_window_item,
-            &mut channel_list_state,
-            channel_list.len(),
-            &mut user_list_state,
-            user_list.len()).expect("Input expect");
+            &mut channel_list.list_state,
+            channel_list.conversation_list.len(),
+            &mut user_list.list_state,
+            user_list.conversation_list.len()).expect("Input expect");
         if matches!(event, Event::Quit){
             disable_raw_mode()?;
             terminal.show_cursor()?;
