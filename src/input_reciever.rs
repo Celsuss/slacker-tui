@@ -9,18 +9,18 @@ use tui::{
 use std::sync::mpsc;
 
 use crate::windows::{MenuItem, ConversationList};
-use crate::{Event};
+use crate::{InputEvent};
 use crate::slack_interface::{user_interface::User, channel_interface::Channel};
-use crate::observer::{Notifier};
+use crate::observer::{Notifier, Event};
 
 pub struct InputReciever<'a> {
-    rx: &'a mpsc::Receiver<Event<crossterm::event::KeyEvent>>,
+    rx: &'a mpsc::Receiver<InputEvent<crossterm::event::KeyEvent>>,
     notifier: Notifier,
 }
 
 impl<'a> InputReciever<'a> {
     pub fn new(
-        rx: &'a mpsc::Receiver<Event<crossterm::event::KeyEvent>>,
+        rx: &'a mpsc::Receiver<InputEvent<crossterm::event::KeyEvent>>,
     ) -> Self {
         InputReciever {
             rx,
@@ -29,14 +29,14 @@ impl<'a> InputReciever<'a> {
     }
 
     pub fn handle_input(&mut self, active_window_item: &mut MenuItem, focus_window_item: &mut MenuItem,
-        channel_list: &mut ConversationList<Channel>, user_list: &mut ConversationList<User>) -> Result<Event<()>, Box<dyn std::error::Error>>{
+        channel_list: &mut ConversationList<Channel>, user_list: &mut ConversationList<User>) -> Result<InputEvent<()>, Box<dyn std::error::Error>>{
         // Receive event from input thread
         match self.rx.recv()? {
-            Event::Input(event) => match event {
+            InputEvent::Input(event) => match event {
                 // Priority key presses
                 // Quit software is user presses 'q'
                 KeyEvent{ code: KeyCode::Char('q'), modifiers: KeyModifiers::NONE} => {
-                    return Ok(Event::Quit);
+                    return Ok(InputEvent::Quit);
                 }
                 // Deselect focused window
                 KeyEvent { code: KeyCode::Esc, modifiers: KeyModifiers::NONE } => {
@@ -61,10 +61,10 @@ impl<'a> InputReciever<'a> {
             },
             _ => {},
         }
-        Ok(Event::Tick)
+        Ok(InputEvent::Tick)
     }
 
-    fn update_list_state<T>(&self, list: &mut ConversationList<T>, code: KeyCode) -> Result<Event<()>, Box<dyn std::error::Error>>{ 
+    fn update_list_state<T>(&self, list: &mut ConversationList<T>, code: KeyCode) -> Result<InputEvent<()>, Box<dyn std::error::Error>>{ 
         match code {
             KeyCode::Up => {
                 if let Some(selected) = list.list_state.selected() {
@@ -81,11 +81,11 @@ impl<'a> InputReciever<'a> {
                 }
             }
             KeyCode::Enter => {
-                return Ok(Event::Tick);
+                self.notifier.notify_observers(Event::ChangeConversation(("test").to_string()));
             }
             _ => {}
         }
-        Ok(Event::Tick)
+        Ok(InputEvent::Tick)
     }
     
     fn navigate_windows(&self, code: KeyCode, active_window_item: &mut MenuItem, focus_window_item: &mut MenuItem){

@@ -34,12 +34,10 @@ mod observer;
 use crate::slack_interface::{user_interface, channel_interface, messages_interface};
 
 // Input events
-pub enum Event<T> { 
+pub enum InputEvent<T> { 
     Input(T),
     Tick,
     Quit,
-    Change(T),
-    ChangeConversation(T),
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -71,7 +69,7 @@ fn parse_config() -> Result<Value, Box<dyn std::error::Error>> {
     Ok(config)
 }
 
-fn input_listen(tx: &mpsc::Sender<Event<KeyEvent>>, tick_rate: &Duration) -> Result<(), io::Error> {
+fn input_listen(tx: &mpsc::Sender<InputEvent<KeyEvent>>, tick_rate: &Duration) -> Result<(), io::Error> {
     let mut last_tick = Instant::now();
     loop {
         let timeout = tick_rate
@@ -81,12 +79,12 @@ fn input_listen(tx: &mpsc::Sender<Event<KeyEvent>>, tick_rate: &Duration) -> Res
         // wait (timeout) for user input, if no input then send tick event
         if event::poll(timeout).expect("poll works") {
             if let CEvent::Key(key) = event::read().expect("can read events") {
-                tx.send(Event::Input(key)).expect("can send events");
+                tx.send(InputEvent::Input(key)).expect("can send events");
             }
         }
 
         if last_tick.elapsed() >= *tick_rate {
-            if let Ok(_) = tx.send(Event::Tick) {
+            if let Ok(_) = tx.send(InputEvent::Tick) {
                 last_tick = Instant::now();
             }
         }

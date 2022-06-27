@@ -19,7 +19,7 @@ use tui::{
     Terminal,
 };
 
-use crate::{Event, messages::Conversation};
+use crate::{InputEvent, messages::Conversation};
 use crate::channels;
 use crate::home;
 use crate::messages;
@@ -70,7 +70,7 @@ pub struct ConversationList<T>{
 //     }
 // }
 
-pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) -> Result<(), Box<dyn std::error::Error>>{
+pub fn render_windows(rx: &mpsc::Receiver<InputEvent<crossterm::event::KeyEvent>>) -> Result<(), Box<dyn std::error::Error>>{
     let stdout = io::stdout();
     let backend = CrosstermBackend::new(stdout);
 
@@ -176,7 +176,7 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
             &mut user_list)
             .expect("Input expect");
 
-        if matches!(event, Event::Quit){
+        if matches!(event, InputEvent::Quit){
             disable_raw_mode()?;
             terminal.show_cursor()?;
             break;

@@ -25,9 +25,9 @@ impl Notifier {
         self.observers.push(observer);
     }
 
-    pub fn notify_observers(&self, event: &Event) {
+    pub fn notify_observers(&self, event: Event) {
         for observer in &self.observers {
-            observer.notify(event);
+            observer.notify(&event);
         }
     }
 }
