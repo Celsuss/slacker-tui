@@ -29,6 +29,7 @@ mod home;
 mod messages;
 mod input_reciever;
 mod slack_interface;
+mod observer;
 
 use crate::slack_interface::{user_interface, channel_interface, messages_interface};
 

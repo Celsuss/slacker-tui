@@ -23,7 +23,7 @@ use crate::{Event, messages::Conversation};
 use crate::channels;
 use crate::home;
 use crate::messages;
-use crate::input_reciever;
+use crate::input_reciever::{InputReciever};
 use crate::slack_interface::{user_interface, channel_interface, messages_interface};
 
 
@@ -105,6 +105,8 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
     let conversation = Conversation::new(channel_list.conversation_list[0].name.to_string(), channel_list.conversation_list[0].id.to_string());
     let messages_list = messages_interface::get_channel_messages(&channel_list.conversation_list[0].id, oauth_token).expect("Get messages list expect");
 
+    let mut input_reciever = InputReciever::new(rx);
+
     loop {
         // Windows layout
         terminal.draw(|rect| {
@@ -167,14 +169,13 @@ pub fn render_windows(rx: &mpsc::Receiver<Event<crossterm::event::KeyEvent>>) ->
             rect.render_widget(messages::render_messages_input(matches!(active_window_item, MenuItem::Input)), messages_chunks[1]);
         })?;
 
-        // TODO: Handle exit event
-        let event = input_reciever::recieve_input(rx,
+        let event = input_reciever.handle_input(
             &mut active_window_item, 
             &mut focus_window_item,
-            &mut channel_list.list_state,
-            channel_list.conversation_list.len(),
-            &mut user_list.list_state,
-            user_list.conversation_list.len()).expect("Input expect");
+            &mut channel_list,
+            &mut user_list)
+            .expect("Input expect");
+
         if matches!(event, Event::Quit){
             disable_raw_mode()?;
             terminal.show_cursor()?;
