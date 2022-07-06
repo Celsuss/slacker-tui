@@ -1,8 +1,6 @@
+use std::rc::Weak;
 
-// #[derive(Copy)]
 pub enum Event { 
-    Tick,
-    Quit,
     ChangeConversation(String),
 }
 
@@ -11,7 +9,7 @@ pub trait Observer{
 }
 
 pub struct Notifier {
-    observers: Vec<Box<dyn Observer>>,
+    observers: Vec<Weak<dyn Observer>>,
 }
 
 impl Notifier {
@@ -21,13 +19,17 @@ impl Notifier {
         }
     }
 
-    pub fn add_observer(&mut self, observer: Box<dyn Observer>) {
+    pub fn add_observer(&mut self, observer: Weak<dyn Observer>) {
         self.observers.push(observer);
     }
 
     pub fn notify_observers(&self, event: Event) {
-        for observer in &self.observers {
-            observer.notify(&event);
+        for observer_ptr in &self.observers {
+            let observer = observer_ptr.upgrade();
+            if observer.is_some(){
+                let observer = observer.unwrap().notify(&event);
+                // observer.notify(&event);
+            }
         }
     }
 }

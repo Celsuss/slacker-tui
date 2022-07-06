@@ -11,11 +11,11 @@ use std::sync::mpsc;
 use crate::windows::{MenuItem, ConversationList};
 use crate::{InputEvent};
 use crate::slack_interface::{user_interface::User, channel_interface::Channel};
-use crate::observer::{Notifier, Event};
+use crate::observer::{Notifier, Observer, Event};
 
 pub struct InputReciever<'a> {
     rx: &'a mpsc::Receiver<InputEvent<crossterm::event::KeyEvent>>,
-    notifier: Notifier,
+    pub notifier: Notifier,
 }
 
 impl<'a> InputReciever<'a> {
@@ -47,10 +47,12 @@ impl<'a> InputReciever<'a> {
                         MenuItem::Channels => {
                             self.update_list_state(channel_list, event.code)
                                 .expect("Update channel list state expect");
+                            self.select_list_element(channel_list.get_conversation_id().unwrap(), event.code);
                         },
                         MenuItem::Users => {
                             self.update_list_state(user_list, event.code)
                                 .expect("Update user list state expect");
+                            self.select_list_element(user_list.get_conversation_id().unwrap(), event.code);
                         },
                         _ => {
                             self.navigate_windows(event.code, active_window_item, focus_window_item);
@@ -64,7 +66,7 @@ impl<'a> InputReciever<'a> {
         Ok(InputEvent::Tick)
     }
 
-    fn update_list_state<T>(&self, list: &mut ConversationList<T>, code: KeyCode) -> Result<InputEvent<()>, Box<dyn std::error::Error>>{ 
+    fn update_list_state<T>(&self, list: &mut ConversationList<T>, code: KeyCode) -> Result<(), Box<dyn std::error::Error>>{ 
         match code {
             KeyCode::Up => {
                 if let Some(selected) = list.list_state.selected() {
@@ -80,12 +82,16 @@ impl<'a> InputReciever<'a> {
                     }
                 }
             }
-            KeyCode::Enter => {
-                self.notifier.notify_observers(Event::ChangeConversation(("test").to_string()));
-            }
             _ => {}
         }
-        Ok(InputEvent::Tick)
+        Ok(())
+    }
+
+    fn select_list_element(&self, id: String, code: KeyCode) {
+        if code == KeyCode::Enter {
+            println!("Notify!");
+            self.notifier.notify_observers(Event::ChangeConversation(id));
+        }
     }
     
     fn navigate_windows(&self, code: KeyCode, active_window_item: &mut MenuItem, focus_window_item: &mut MenuItem){

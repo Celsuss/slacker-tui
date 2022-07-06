@@ -4,7 +4,7 @@ use serde_json::{Result, Value};
 use crate::slack_interface;
 
 pub struct User{
-    id: String,
+    pub id: String,
     pub name: String,
 }
 

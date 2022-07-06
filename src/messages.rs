@@ -14,6 +14,7 @@ use tui::{
 };
 
 use crate::slack_interface::{messages_interface::{self, Message}};
+use crate::observer::{Observer, Event};
 
 pub struct Conversation{
     conversation_name: String,
@@ -33,50 +34,61 @@ impl Conversation{
         self.conversation_id = id;
     }
 
-    pub fn render_messages<'a>(&self, messages: &Vec<Message>) -> Paragraph<'a>{
-        // Message block
-        let messages_block = Block::default()
-            .borders(Borders::ALL)
-            .style(Style::default().fg(Color::White))
-            .title(format!("Messages - {}", &self.conversation_name))
-            .border_type(BorderType::Plain);
-    
-        let items: Vec<_> = messages.iter().rev()
-            .map(|message| 
-                Spans::from(vec![
-                    Span::raw("["),
-                    Span::styled(
-                        message.ts.clone(), // TODO: Format time
-                        Style::default()
-                            .fg(Color::Yellow)
-                            .add_modifier(Modifier::BOLD),
-                    ),
-                    Span::raw("]"),
-                    Span::raw(" "),
-                    Span::raw("<"),
-                    Span::styled(
-                        message.username.clone(),
-                        Style::default()
-                            .fg(Color::Cyan)
-                            .add_modifier(Modifier::BOLD),
-                    ),
-                    Span::raw(">"),
-                    Span::raw(" "),
-                    Span::styled(
-                        message.text.clone(),
-                        Style::default(),
-                    ),
-                ])
-            ).collect();
-    
-        let paragraph = Paragraph::new(items)
-            .block(messages_block)
-            .alignment(Alignment::Left)
-            .wrap(Wrap { trim: true });
-    
-        paragraph
-    
+}
+
+impl Observer for Conversation{
+    fn notify(&self, event: &Event){
+        match event {
+            Event::ChangeConversation(conversation_id) => {
+                println!("Conversation changed to {}", conversation_id);
+            }
+        }
     }
+}
+
+pub fn render_messages<'a>(conversation: &Conversation, messages: &Vec<Message>) -> Paragraph<'a>{
+    // Message block
+    let messages_block = Block::default()
+        .borders(Borders::ALL)
+        .style(Style::default().fg(Color::White))
+        .title(format!("Messages - {}", conversation.conversation_name))
+        .border_type(BorderType::Plain);
+
+    let items: Vec<_> = messages.iter().rev()
+        .map(|message| 
+            Spans::from(vec![
+                Span::raw("["),
+                Span::styled(
+                    message.ts.clone(), // TODO: Format time
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD),
+                ),
+                Span::raw("]"),
+                Span::raw(" "),
+                Span::raw("<"),
+                Span::styled(
+                    message.username.clone(),
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                ),
+                Span::raw(">"),
+                Span::raw(" "),
+                Span::styled(
+                    message.text.clone(),
+                    Style::default(),
+                ),
+            ])
+        ).collect();
+
+    let paragraph = Paragraph::new(items)
+        .block(messages_block)
+        .alignment(Alignment::Left)
+        .wrap(Wrap { trim: true });
+
+    paragraph
+
 }
 
 pub fn render_messages_input<'a>(is_active: bool) -> Paragraph<'a>{
