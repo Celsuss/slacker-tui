@@ -26,6 +26,8 @@ use crate::{InputEvent, messages::Conversation};
 use crate::channels;
 use crate::home;
 use crate::messages;
+use crate::user_interface::User;
+use crate::channel_interface::Channel;
 use crate::input_reciever::{InputReciever};
 use crate::slack_interface::{user_interface, channel_interface, messages_interface};
 use crate::observer::{Observer, Event};
@@ -66,6 +68,15 @@ pub struct ConversationList<T>{
 }
 
 impl ConversationList<channel_interface::Channel> {
+    pub fn new(conversation_list: Vec<Channel>) -> Self {
+        let mut list_state = ListState::default();
+        list_state.select(Some(0));
+        ConversationList {
+            list_state: list_state,
+            conversation_list: conversation_list,
+        }
+    }
+
     pub fn get_conversation_id(&self) -> Option<String> {
         if let Some(selected) = self.list_state.selected() {
             Some(self.conversation_list[selected].id.clone())
@@ -76,6 +87,16 @@ impl ConversationList<channel_interface::Channel> {
 }
 
 impl ConversationList<user_interface::User> {
+    // TODO: Add constructor
+    pub fn new(conversation_list: Vec<User>) -> Self {
+        let mut list_state = ListState::default();
+        list_state.select(Some(0));
+        ConversationList {
+            list_state: list_state,
+            conversation_list: conversation_list,
+        }
+    }
+
     pub fn get_conversation_id(&self) -> Option<String> {
         if let Some(selected) = self.list_state.selected() {
             Some(self.conversation_list[selected].id.clone())
@@ -133,26 +154,26 @@ impl<'a> App<'a> {
         let config = crate::parse_config().expect("Parse config expect");
         let oauth_token = &config["oauth_token"].as_str()
             .expect("OAuth token is not a string").to_string();
-        let mut channel_list = ConversationList{
-            list_state: ListState::default(),
-            conversation_list: channel_interface::get_channel_list(
-                &oauth_token
-            ).expect("Get channel list expect")
-        };
-        channel_list.list_state.select(Some(0));
-        let channel_name = &channel_list.conversation_list[0].name.to_string();
-        let channel_id = &channel_list.conversation_list[0].id.to_string();
 
+        let mut channel_list = ConversationList::<Channel>::new(
+            channel_interface::get_channel_list(
+                &oauth_token).expect("Get channel list expect")
+        );
+
+        let mut user_list = ConversationList::<User>::new(
+            user_interface::get_user_list(
+                &oauth_token).expect("Get user list expect")
+        );
+
+        // TODO: Add constructor for team conversations
         let mut team_list = ConversationList{
             list_state: ListState::default(),
             conversation_list: Vec::from(["test team"])
         };
         team_list.list_state.select(Some(0));
-        let mut user_list = ConversationList{
-            list_state: ListState::default(),
-            conversation_list: user_interface::get_user_list(oauth_token).expect("Get user list expect")
-        };
-        user_list.list_state.select(Some(0));
+
+        let channel_name = &channel_list.conversation_list[0].name.to_string();
+        let channel_id = &channel_list.conversation_list[0].id.to_string();
 
         Self { 
             config: config,
@@ -170,7 +191,7 @@ impl<'a> App<'a> {
                 &channel_id,
                 &oauth_token
             ).expect("Get messages list expect"),
-            input_reciever: InputReciever::new(rx), // TODO: Don't handle input during draw
+            input_reciever: InputReciever::new(rx), 
         }
     }
 }
