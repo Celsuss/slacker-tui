@@ -4,7 +4,8 @@ use tui::{
     style::{Color, Modifier, Style},
     text::{Span, Spans},
     widgets::{
-        Block, BorderType, Borders, Cell, List, ListItem, ListState, Paragraph, Row, Table, Tabs,
+        Block, BorderType, Borders, Cell, List, ListItem,
+        ListState, Paragraph, Row, Table, Tabs, Wrap,
     },
     Frame,
     Terminal,
@@ -55,7 +56,7 @@ where
 
     draw_teams(frame, app, channel_chunks[0]);
     draw_channels(frame, app, channel_chunks[1]);
-    // draw_users(frame, app, channel_chunks[2]);
+    draw_users(frame, app, channel_chunks[2]);
 }
 
 pub fn draw_teams<B>(frame: &mut Frame<B>, app: &App<'_>, chunk: Rect)
@@ -130,8 +131,86 @@ B: Backend{
         )
         .split(chunk);
 
-    // draw_conversation(frame, app, conversation_chunks[0])?;
-    // draw_conversation_input(frame, app, conversation_chunks[1])?;
+    draw_conversation_messages(frame, app, conversation_chunks[0]);
+    draw_conversation_input(frame, app, conversation_chunks[1]);
+}
+
+pub fn draw_conversation_messages<B>(frame: &mut Frame<B>, app: &App<'_>, chunk: Rect)
+where
+B: Backend{
+    // Get conversations
+    let items: Vec<_> = app.messages_list.iter().rev()
+        .map(|item|
+            Spans::from(vec![
+                Span::raw("["),
+                Span::styled(
+                    item.ts.clone(), // TODO: Format time
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD),
+                ),
+                Span::raw("]"),
+                Span::raw(" "),
+                Span::raw("<"),
+                Span::styled(
+                    item.username.clone(),
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                ),
+                Span::raw(">"),
+                Span::raw(" "),
+                Span::styled(
+                    item.text.clone(),
+                    Style::default(),
+                ),
+            ])
+        ).collect();
+
+    let highlight_state = (
+        app.active_block == ActiveBlock::Messages,
+        app.hovered_block == ActiveBlock::Messages,
+    );
+
+    draw_paragraph(frame, app, chunk, "tmp title", items, highlight_state);
+}
+
+pub fn draw_conversation_input<B>(frame: &mut Frame<B>, app: &App<'_>, chunk: Rect)
+where
+B: Backend{
+    // TODO: Get real input
+    let text_input = "test input";
+
+    let items: Vec<Spans> = vec![
+        Spans::from(vec![
+            Span::raw(text_input.clone()),
+        ])
+    ];
+
+    let highlight_state = (
+        app.active_block == ActiveBlock::Input,
+        app.hovered_block == ActiveBlock::Input,
+    );
+
+    draw_paragraph(frame, app, chunk, "tmp title", items, highlight_state);
+}
+
+pub fn draw_paragraph<B>(frame: &mut Frame<B>, app: &App<'_>, chunk: Rect,
+    title: &str, items: Vec<Spans>, highlight_state: (bool, bool))
+where
+B: Backend{
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title(title)
+        .border_type(BorderType::Plain)
+        .style(util::get_color(highlight_state));
+
+    let paragraph = Paragraph::new(items)
+        .block(block)
+        .alignment(Alignment::Left)
+        .wrap(Wrap { trim: true });
+
+    frame.render_widget(paragraph, chunk);
 }
 
 pub fn draw_selectable_list<B, S>(frame: &mut Frame<B>, app: &App<'_>, chunk: Rect,
