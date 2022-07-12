@@ -59,6 +59,8 @@ pub struct App<'a>{
     // conversation: Conversation,
     pub messages_list: Vec<messages_interface::Message>,
     // input_reciever: InputReciever<'a>,
+    pub active_conversation_id: Option<String>,
+    pub active_conversation_name: Option<String>,
 }
 
 impl<'a> App<'a> {
@@ -83,6 +85,8 @@ impl<'a> App<'a> {
             selected_user_index: None,
             messages_list: Vec::new(),
             // input_reciever: InputReciever::new(rx), 
+            active_conversation_id: None,
+            active_conversation_name: None,
         }
     }
 }
@@ -96,6 +100,7 @@ pub fn start_ui(rx: &mpsc::Receiver<InputEvent<crossterm::event::KeyEvent>>)
     terminal.clear()?;
 
     let mut app = App::new(rx);
+
     let mut input_reciever = InputReciever::new(rx);
 
     loop{

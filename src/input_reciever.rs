@@ -47,13 +47,13 @@ impl<'a> InputReciever<'a> {
                             self.select_list_element(app, event.code);
                         },
                         ActiveBlock::Users => {
-                            self.update_list_state(&mut app.selected_channel_index,
+                            self.update_list_state(&mut app.selected_user_index,
                                 &app.user_list, event.code)
                                 .expect("Update user list state expect");
                             self.select_list_element(app, event.code);
                         },
                         ActiveBlock::Teams => {
-                            
+
                         }
                         _ => {
                             // No active block, navigate hovered block
@@ -71,6 +71,10 @@ impl<'a> InputReciever<'a> {
     fn update_list_state<T>(&self, list_index: &mut Option<usize>,
         list: &Vec<T>, code: KeyCode)
     -> Result<(), Box<dyn std::error::Error>>{ 
+        if list.len() == 0 {
+            return Ok(());
+        }
+
         match code {
             KeyCode::Up => {
                 if let Some(list_index) = list_index {
@@ -78,12 +82,18 @@ impl<'a> InputReciever<'a> {
                         *list_index -= 1;
                     }
                 }
+                else{
+                    *list_index = Some(0);
+                }
             }
             KeyCode::Down => {
                 if let Some(list_index) = list_index {
                     if *list_index < list.len() - 1 {
                         *list_index += 1;
                     }
+                }
+                else{
+                    *list_index = Some(0);
                 }
             }
             _ => {}

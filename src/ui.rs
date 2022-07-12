@@ -77,7 +77,7 @@ B: Backend{
     );
 
     draw_selectable_list(frame, app, chunk, title, &items,
-        highlight_state, app.selected_team_index);
+        highlight_state, &app.selected_team_index);
 }
 
 pub fn draw_channels<B>(frame: &mut Frame<B>, app: &App<'_>, chunk: Rect)
@@ -97,7 +97,7 @@ B: Backend{
     );
 
     draw_selectable_list(frame, app, chunk, title, &items,
-        highlight_state, app.selected_channel_index);
+        highlight_state, &app.selected_channel_index);
 }
 
 pub fn draw_users<B>(frame: &mut Frame<B>, app: &App<'_>, chunk: Rect)
@@ -117,7 +117,7 @@ B: Backend{
     );
 
     draw_selectable_list(frame, app, chunk, title, &items,
-        highlight_state, app.selected_user_index);
+        highlight_state, &app.selected_user_index);
 }
 
 pub fn draw_conversation<B>(frame: &mut Frame<B>, app: &App<'_>, chunk: Rect)
@@ -215,12 +215,12 @@ B: Backend{
 }
 
 pub fn draw_selectable_list<B, S>(frame: &mut Frame<B>, app: &App<'_>, chunk: Rect,
-    title: &str, items: &[S], highlight_state: (bool, bool), selected_index: Option<usize>)
+    title: &str, items: &[S], highlight_state: (bool, bool), selected_index: &Option<usize>)
 where
 B: Backend,
 S: std::convert::AsRef<str>{
     let mut state = ListState::default();
-    state.select(selected_index);
+    state.select(*selected_index);
 
     let list_items: Vec<ListItem> = items
         .iter()
