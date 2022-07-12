@@ -11,6 +11,7 @@ use std::sync::mpsc;
 use crate::app::{App, ActiveBlock};
 use crate::{InputEvent};
 use crate::slack_interface::{user_interface::User, channel_interface::Channel};
+use crate::util;
 
 pub struct InputReciever<'a> {
     rx: &'a mpsc::Receiver<InputEvent<crossterm::event::KeyEvent>>,
@@ -106,9 +107,17 @@ impl<'a> InputReciever<'a> {
             KeyCode::Right => {
 
             }
+            KeyCode::Backspace => {
+                if !app.input.is_empty() && app.input_idx > 0 {
+                    let c = app.input.remove(app.input_idx - 1);
+                    app.input_idx -= 1;
+                    app.input_cursor_position -= util::calculate_character_width(c);
+                  }
+            }
             KeyCode::Char(c) => {
                 app.input.insert(app.input_idx, c);
                 app.input_idx += 1;
+                app.input_cursor_position += util::calculate_character_width(c);
             }
             _ => {}
         }

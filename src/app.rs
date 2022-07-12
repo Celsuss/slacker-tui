@@ -61,6 +61,7 @@ pub struct App<'a>{
     pub active_conversation_name: Option<String>,
     pub input: Vec<char>,
     pub input_idx: usize,
+    pub input_cursor_position: u16,
 }
 
 impl<'a> App<'a> {
@@ -89,6 +90,7 @@ impl<'a> App<'a> {
             active_conversation_name: None,
             input: vec![],
             input_idx: 0,
+            input_cursor_position: 0,
         }
     }
 
