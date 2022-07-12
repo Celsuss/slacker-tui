@@ -64,7 +64,7 @@ pub struct App<'a>{
 }
 
 impl<'a> App<'a> {
-    pub fn new(rx: &'a mpsc::Receiver<InputEvent<crossterm::event::KeyEvent>>) -> Self {
+    pub fn new() -> Self {
         let config = crate::parse_config().expect("Parse config expect");
         let oauth_token = &config["oauth_token"].as_str()
             .expect("OAuth token is not a string").to_string();
@@ -99,7 +99,7 @@ pub fn start_ui(rx: &mpsc::Receiver<InputEvent<crossterm::event::KeyEvent>>)
     let mut terminal = Terminal::new(backend)?;
     terminal.clear()?;
 
-    let mut app = App::new(rx);
+    let mut app = App::new();
 
     let mut input_reciever = InputReciever::new(rx);
 

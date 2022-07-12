@@ -36,7 +36,12 @@ impl<'a> InputReciever<'a> {
                 }
                 // Deselect focused window
                 KeyEvent { code: KeyCode::Esc, modifiers: KeyModifiers::NONE } => {
+                    // TODO: Move this to a function
                     app.active_block.clone_from(&ActiveBlock::None);
+                    // TODO: Improve to only use one selected index
+                    app.selected_team_index = None;
+                    app.selected_channel_index = None;
+                    app.selected_user_index = None;
                 }
                 _ => {
                     match app.active_block {
@@ -44,20 +49,38 @@ impl<'a> InputReciever<'a> {
                             self.update_list_state(&mut app.selected_channel_index, 
                                 &app.channel_list, event.code)
                                 .expect("Update channel list state expect");
-                            self.select_list_element(app, event.code);
+                            self.select_list_element(app, 
+                                app.selected_channel_index, 
+                                app.channel_list.iter().map(|c| c.name.clone()).collect(), 
+                                event.code);
                         },
                         ActiveBlock::Users => {
                             self.update_list_state(&mut app.selected_user_index,
                                 &app.user_list, event.code)
                                 .expect("Update user list state expect");
-                            self.select_list_element(app, event.code);
+                            self.select_list_element(app, 
+                                app.selected_user_index, 
+                                app.user_list.iter().map(|u| u.name.clone()).collect(),
+                                event.code);
                         },
                         ActiveBlock::Teams => {
 
                         }
-                        _ => {
+                        ActiveBlock::None => {
+                            // If no window is focused, check if user pressed 'c' to select channel
+                            // if event.code == KeyCode::Char('c') {
+                            //     app.active_block.clone_from(&ActiveBlock::Channels);
+                            // } else if event.code == KeyCode::Char('u') {
+                            //     app.active_block.clone_from(&ActiveBlock::Users);
+                            // } else if event.code == KeyCode::Char('t') {
+                            //     app.active_block.clone_from(&ActiveBlock::Teams);
+                            // }
+
                             // No active block, navigate hovered block
                             self.navigate_windows(event.code, app);
+                        }
+                        _ => {
+                            
                         }
                     }
                 }
@@ -101,10 +124,14 @@ impl<'a> InputReciever<'a> {
         Ok(())
     }
 
-    fn select_list_element(&self, app: &mut App, code: KeyCode) {
-        // TODO: Implement
+    fn select_list_element(&self, app: &mut App, list_index: Option<usize>, list: Vec<String>, code: KeyCode){
         if code == KeyCode::Enter {
-            println!("Notify!");
+            if let Some(index) = list_index {
+                if index >= list.len() { return; }
+
+                let conversation_name = list.get(index).unwrap();
+                app.active_conversation_name = Some(conversation_name.to_owned());
+            }
         }
     }
     

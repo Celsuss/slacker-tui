@@ -138,6 +138,11 @@ B: Backend{
 pub fn draw_conversation_messages<B>(frame: &mut Frame<B>, app: &App<'_>, chunk: Rect)
 where
 B: Backend{
+    let mut title = "No Conversation Selected";
+    if let Some(conversation_name) = &app.active_conversation_name{
+        title = &conversation_name;
+    } 
+
     // Get conversations
     let items: Vec<_> = app.messages_list.iter().rev()
         .map(|item|
@@ -172,12 +177,14 @@ B: Backend{
         app.hovered_block == ActiveBlock::Messages,
     );
 
-    draw_paragraph(frame, app, chunk, "tmp title", items, highlight_state);
+    draw_paragraph(frame, app, chunk, title, items, highlight_state);
 }
 
 pub fn draw_conversation_input<B>(frame: &mut Frame<B>, app: &App<'_>, chunk: Rect)
 where
 B: Backend{
+    let title = "Input";
+
     // TODO: Get real input
     let text_input = "test input";
 
@@ -192,7 +199,7 @@ B: Backend{
         app.hovered_block == ActiveBlock::Input,
     );
 
-    draw_paragraph(frame, app, chunk, "tmp title", items, highlight_state);
+    draw_paragraph(frame, app, chunk, title, items, highlight_state);
 }
 
 pub fn draw_paragraph<B>(frame: &mut Frame<B>, app: &App<'_>, chunk: Rect,
