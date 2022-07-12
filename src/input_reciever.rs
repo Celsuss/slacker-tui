@@ -70,6 +70,9 @@ impl<'a> InputReciever<'a> {
                         ActiveBlock::Teams => {
 
                         }
+                        ActiveBlock::Input => {
+                            self.handle_user_intput(app, event.code);
+                        }
                         ActiveBlock::None => {
                             // If no window is focused, check if user pressed 'c' to select channel
                             // if event.code == KeyCode::Char('c') {
@@ -93,6 +96,22 @@ impl<'a> InputReciever<'a> {
             _ => {},
         }
         Ok(InputEvent::Tick)
+    }
+
+    fn handle_user_intput(&self, app: &mut App, code: KeyCode){
+        match code {
+            KeyCode::Left => {
+
+            }
+            KeyCode::Right => {
+
+            }
+            KeyCode::Char(c) => {
+                app.input.insert(app.input_idx, c);
+                app.input_idx += 1;
+            }
+            _ => {}
+        }
     }
 
     fn update_list_state<T>(&self, list_index: &mut Option<usize>,

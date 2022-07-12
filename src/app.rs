@@ -59,6 +59,8 @@ pub struct App<'a>{
     pub messages_list: Vec<messages_interface::Message>,
     pub active_conversation_id: Option<String>,
     pub active_conversation_name: Option<String>,
+    pub input: Vec<char>,
+    pub input_idx: usize,
 }
 
 impl<'a> App<'a> {
@@ -85,6 +87,8 @@ impl<'a> App<'a> {
             // input_reciever: InputReciever::new(rx), 
             active_conversation_id: None,
             active_conversation_name: None,
+            input: vec![],
+            input_idx: 0,
         }
     }
 

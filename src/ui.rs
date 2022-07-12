@@ -186,7 +186,7 @@ B: Backend{
     let title = "Input";
 
     // TODO: Get real input
-    let text_input = "test input";
+    let text_input: String = app.input.iter().collect();
 
     let items: Vec<Spans> = vec![
         Spans::from(vec![
