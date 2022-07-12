@@ -3,31 +3,15 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 // use rand::{distributions::Alphanumeric, prelude::*};
-use serde::{Deserialize, Serialize, de::Expected};
 use serde_json::Value;
-use std::{rc::{Rc, Weak}, borrow::{BorrowMut, Borrow}};
-use std::fs;
-use std::cell::RefCell;
 use std::io;
 use std::sync::mpsc;
 use tui::{
     backend::{CrosstermBackend, Backend},
-    layout::{Alignment, Constraint, Direction, Layout},
-    style::{Color, Modifier, Style},
-    text::{Span, Spans},
-    widgets::{
-        Block, BorderType, Borders, Cell, List, ListItem, ListState, Paragraph, Row, Table, Tabs,
-    },
-    Frame,
     Terminal,
 };
 
-use crate::{InputEvent, messages::Conversation, input_reciever};
-use crate::channels;
-use crate::home;
-use crate::messages;
-use crate::user_interface::User;
-use crate::channel_interface::Channel;
+use crate::{InputEvent, };
 use crate::input_reciever::{InputReciever};
 use crate::slack_interface::{user_interface, channel_interface, messages_interface};
 use crate::ui;
@@ -83,29 +67,11 @@ impl<'a> App<'a> {
         let oauth_token = &config["oauth_token"].as_str()
             .expect("OAuth token is not a string").to_string();
 
-        // let mut channel_list = ConversationList::<Channel>::new(
-        //     channel_interface::get_channel_list(
-        //         &oauth_token).expect("Get channel list expect")
-        // );
-
-        // let mut user_list = ConversationList::<User>::new(
-        //     user_interface::get_user_list(
-        //         &oauth_token).expect("Get user list expect")
-        // );
-
-        // TODO: Add constructor for team conversations
-        // let mut team_list = ConversationList{
-        //     list_state: ListState::default(),
-        //     conversation_list: Vec::from(["test team"])
-        // };
-        // team_list.list_state.select(Some(0));
-        // let channel_id = &channel_list.conversation_list[0].id.to_string();
-
         Self { 
             config: config,
             oauth_token: oauth_token.to_string(),
-            active_block: ActiveBlock::Channels,
-            hovered_block: ActiveBlock::None,
+            active_block: ActiveBlock::None,
+            hovered_block: ActiveBlock::Channels,
             team_list: Vec::from(["test team"]),
             // TODO:: Move get channels, users, teams and messages outside of constructor
             channel_list: Vec::from(channel_interface::get_channel_list(

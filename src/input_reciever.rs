@@ -8,7 +8,6 @@ use tui::{
 };
 use std::sync::mpsc;
 
-use crate::windows::{ConversationList};
 use crate::app::{App, ActiveBlock};
 use crate::{InputEvent};
 use crate::slack_interface::{user_interface::User, channel_interface::Channel};
@@ -37,10 +36,10 @@ impl<'a> InputReciever<'a> {
                 }
                 // Deselect focused window
                 KeyEvent { code: KeyCode::Esc, modifiers: KeyModifiers::NONE } => {
-                    app.hovered_block.clone_from(&ActiveBlock::None);
+                    app.active_block.clone_from(&ActiveBlock::None);
                 }
                 _ => {
-                    match app.hovered_block {
+                    match app.active_block {
                         ActiveBlock::Channels => {
                             self.update_list_state(&mut app.selected_channel_index, 
                                 &app.channel_list, event.code)
@@ -53,7 +52,11 @@ impl<'a> InputReciever<'a> {
                                 .expect("Update user list state expect");
                             self.select_list_element(app, event.code);
                         },
+                        ActiveBlock::Teams => {
+                            
+                        }
                         _ => {
+                            // No active block, navigate hovered block
                             self.navigate_windows(event.code, app);
                         }
                     }

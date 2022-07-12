@@ -11,27 +11,14 @@ use std::io;
 use std::sync::mpsc;
 use std::thread;
 use std::time::{Duration, Instant};
-use thiserror::Error;
-use tui::{
-    backend::CrosstermBackend,
-    layout::{Alignment, Constraint, Direction, Layout},
-    style::{Color, Modifier, Style},
-    text::{Span, Spans},
-    widgets::{
-        Block, BorderType, Borders, Cell, List, ListItem, ListState, Paragraph, Row, Table, Tabs,
-    },
-    Terminal,
-};
 
-mod channels;
-mod windows;
 mod home;
 mod messages;
 mod input_reciever;
 mod slack_interface;
-mod observer;
-
-use crate::slack_interface::{user_interface, channel_interface, messages_interface};
+mod ui;
+mod util;
+mod app;
 
 // Input events
 pub enum InputEvent<T> { 
@@ -57,8 +44,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a thread for handling input events
     thread::spawn(move || input_listen(&tx, &tick_rate));
 
-    enable_raw_mode().expect("can run in raw mode");
-    windows::render_windows(&rx).expect("can render windows");
+    enable_raw_mode().expect("Enable raw mode expect");
+    app::start_ui(&rx).expect("Start ui expect");
 
     Ok(())
 }

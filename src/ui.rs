@@ -8,11 +8,10 @@ use tui::{
         ListState, Paragraph, Row, Table, Tabs, Wrap,
     },
     Frame,
-    Terminal,
 };
 
 use crate::util;
-use crate::windows::{
+use crate::app::{
     App, ActiveBlock,
 };
 
@@ -34,6 +33,7 @@ pub fn draw_ui<B: Backend>(frame: &mut Frame<B>, app: &App<'_>)
     // Render teams, channels and users
     draw_lists(frame, app, root_chunk[0]);
 
+    // Render messages and messages input
     draw_conversation(frame, app, root_chunk[1]);
 
     Ok(())
@@ -72,8 +72,8 @@ B: Backend{
         .collect();
 
     let highlight_state = (
-        app.active_block == ActiveBlock::Channels,
-        app.hovered_block == ActiveBlock::Channels,
+        app.active_block == ActiveBlock::Teams,
+        app.hovered_block == ActiveBlock::Teams,
     );
 
     draw_selectable_list(frame, app, chunk, title, &items,
@@ -126,8 +126,8 @@ B: Backend{
     let conversation_chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints(
-            [Constraint::Percentage(90),
-            Constraint::Percentage(10)].as_ref(),
+            [Constraint::Percentage(90),            // Messages
+            Constraint::Percentage(10)].as_ref(),   // Input
         )
         .split(chunk);
 
@@ -203,7 +203,8 @@ B: Backend{
         .borders(Borders::ALL)
         .title(title)
         .border_type(BorderType::Plain)
-        .style(util::get_color(highlight_state));
+        .style(Style::default().fg(Color::White))
+        .border_style(util::get_color(highlight_state));
 
     let paragraph = Paragraph::new(items)
         .block(block)

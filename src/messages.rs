@@ -14,11 +14,10 @@ use tui::{
 };
 
 use crate::slack_interface::{messages_interface::{self, Message}};
-use crate::observer::{Observer, Event};
 
 pub struct Conversation{
-    conversation_name: String,
-    conversation_id: String,
+    pub conversation_name: String,
+    pub conversation_id: String,
 }
 
 impl Conversation{
@@ -36,22 +35,21 @@ impl Conversation{
 
 }
 
-impl Observer for Conversation{
-    fn notify(&self, event: &Event){
-        match event {
-            Event::ChangeConversation(conversation_id) => {
-                println!("Conversation changed to {}", conversation_id);
-            }
-        }
-    }
-}
+// impl Copy for Conversation{
+//     fn copy(&self) -> Conversation {
+//         Conversation{
+//             conversation_name: self.conversation_name.clone(),
+//             conversation_id: self.conversation_id.clone(),
+//         }
+//     }
+// }
 
-pub fn render_messages<'a>(conversation: &Conversation, messages: &Vec<Message>) -> Paragraph<'a>{
+pub fn render_messages<'a>(conversation_name: &str, messages: &Vec<Message>) -> Paragraph<'a>{
     // Message block
     let messages_block = Block::default()
         .borders(Borders::ALL)
         .style(Style::default().fg(Color::White))
-        .title(format!("Messages - {}", conversation.conversation_name))
+        .title(format!("Messages - {}", conversation_name))
         .border_type(BorderType::Plain);
 
     let items: Vec<_> = messages.iter().rev()
