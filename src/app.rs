@@ -56,9 +56,7 @@ pub struct App<'a>{
     pub selected_team_index: Option<usize>,
     pub selected_channel_index: Option<usize>,
     pub selected_user_index: Option<usize>,
-    // conversation: Conversation,
     pub messages_list: Vec<messages_interface::Message>,
-    // input_reciever: InputReciever<'a>,
     pub active_conversation_id: Option<String>,
     pub active_conversation_name: Option<String>,
 }
@@ -88,6 +86,17 @@ impl<'a> App<'a> {
             active_conversation_id: None,
             active_conversation_name: None,
         }
+    }
+
+    pub fn change_conversation(&mut self, conversation_id: &String, conversation_name: &String){
+        // TODO: Make sure not to change to the same conversation
+
+        self.active_conversation_id = Some(conversation_id.to_owned());
+        self.active_conversation_name = Some(conversation_name.to_owned());
+
+        // TODO: Make sure to be able to get user conversation as well
+        self.messages_list = messages_interface::get_channel_messages(
+            conversation_id, &self.oauth_token).expect("Get messages expect");
     }
 }
 

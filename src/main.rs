@@ -20,6 +20,8 @@ mod ui;
 mod util;
 mod app;
 
+use slack_interface::{user_interface, channel_interface, messages_interface};
+
 // Input events
 pub enum InputEvent<T> { 
     Input(T),
@@ -34,6 +36,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let user_list = user_interface::get_user_list(oauth_token).expect("Get user list expect");
     // let channel_list = channel_interface::get_channel_list(oauth_token).expect("Get channel list expect");
     // let messages_list = messages_interface::get_channel_messages(&channel_list[0].id, oauth_token).expect("Get messages list expect");
+
+    // println!("Conversation : {}, {}", channel_list[0].name, channel_list[0].id);
+    // println!("Success");
     // return Ok(());
 
 

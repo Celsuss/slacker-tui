@@ -51,7 +51,9 @@ impl<'a> InputReciever<'a> {
                                 .expect("Update channel list state expect");
                             self.select_list_element(app, 
                                 app.selected_channel_index, 
-                                app.channel_list.iter().map(|c| c.name.clone()).collect(), 
+                                app.channel_list.iter()
+                                    .map(|c| (c.id.clone(), c.name.clone()))
+                                    .collect(), 
                                 event.code);
                         },
                         ActiveBlock::Users => {
@@ -60,7 +62,9 @@ impl<'a> InputReciever<'a> {
                                 .expect("Update user list state expect");
                             self.select_list_element(app, 
                                 app.selected_user_index, 
-                                app.user_list.iter().map(|u| u.name.clone()).collect(),
+                                app.user_list.iter()
+                                    .map(|u| (u.id.clone(), u.name.clone()))
+                                    .collect(),
                                 event.code);
                         },
                         ActiveBlock::Teams => {
@@ -124,13 +128,15 @@ impl<'a> InputReciever<'a> {
         Ok(())
     }
 
-    fn select_list_element(&self, app: &mut App, list_index: Option<usize>, list: Vec<String>, code: KeyCode){
+    fn select_list_element(&self, app: &mut App, list_index: Option<usize>, list: Vec<(String, String)>, code: KeyCode){
         if code == KeyCode::Enter {
             if let Some(index) = list_index {
                 if index >= list.len() { return; }
 
-                let conversation_name = list.get(index).unwrap();
-                app.active_conversation_name = Some(conversation_name.to_owned());
+                let conversation_id_and_name = list.get(index).unwrap();
+                app.change_conversation(
+                    &conversation_id_and_name.0, 
+                    &conversation_id_and_name.1);
             }
         }
     }
