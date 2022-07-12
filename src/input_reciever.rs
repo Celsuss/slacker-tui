@@ -8,14 +8,13 @@ use tui::{
 };
 use std::sync::mpsc;
 
-use crate::windows::{MenuItem, ConversationList};
+use crate::windows::{ConversationList};
+use crate::app::{App, ActiveBlock};
 use crate::{InputEvent};
 use crate::slack_interface::{user_interface::User, channel_interface::Channel};
-use crate::observer::{Notifier, Observer, Event};
 
 pub struct InputReciever<'a> {
     rx: &'a mpsc::Receiver<InputEvent<crossterm::event::KeyEvent>>,
-    pub notifier: Notifier,
 }
 
 impl<'a> InputReciever<'a> {
@@ -24,12 +23,10 @@ impl<'a> InputReciever<'a> {
     ) -> Self {
         InputReciever {
             rx,
-            notifier: Notifier::new(),
         }
     }
 
-    pub fn handle_input(&mut self, active_window_item: &mut MenuItem, focus_window_item: &mut MenuItem,
-        channel_list: &mut ConversationList<Channel>, user_list: &mut ConversationList<User>) -> Result<InputEvent<()>, Box<dyn std::error::Error>>{
+    pub fn handle_input(&mut self, app: &mut App) -> Result<InputEvent<()>, Box<dyn std::error::Error>>{
         // Receive event from input thread
         match self.rx.recv()? {
             InputEvent::Input(event) => match event {
@@ -40,22 +37,24 @@ impl<'a> InputReciever<'a> {
                 }
                 // Deselect focused window
                 KeyEvent { code: KeyCode::Esc, modifiers: KeyModifiers::NONE } => {
-                    focus_window_item.clone_from(&MenuItem::None);
+                    app.hovered_block.clone_from(&ActiveBlock::None);
                 }
                 _ => {
-                    match focus_window_item {
-                        MenuItem::Channels => {
-                            self.update_list_state(channel_list, event.code)
+                    match app.hovered_block {
+                        ActiveBlock::Channels => {
+                            self.update_list_state(&mut app.selected_channel_index, 
+                                &app.channel_list, event.code)
                                 .expect("Update channel list state expect");
-                            self.select_list_element(channel_list.get_conversation_id().unwrap(), event.code);
+                            self.select_list_element(app, event.code);
                         },
-                        MenuItem::Users => {
-                            self.update_list_state(user_list, event.code)
+                        ActiveBlock::Users => {
+                            self.update_list_state(&mut app.selected_channel_index,
+                                &app.user_list, event.code)
                                 .expect("Update user list state expect");
-                            self.select_list_element(user_list.get_conversation_id().unwrap(), event.code);
+                            self.select_list_element(app, event.code);
                         },
                         _ => {
-                            self.navigate_windows(event.code, active_window_item, focus_window_item);
+                            self.navigate_windows(event.code, app);
                         }
                     }
                 }
@@ -66,19 +65,21 @@ impl<'a> InputReciever<'a> {
         Ok(InputEvent::Tick)
     }
 
-    fn update_list_state<T>(&self, list: &mut ConversationList<T>, code: KeyCode) -> Result<(), Box<dyn std::error::Error>>{ 
+    fn update_list_state<T>(&self, list_index: &mut Option<usize>,
+        list: &Vec<T>, code: KeyCode)
+    -> Result<(), Box<dyn std::error::Error>>{ 
         match code {
             KeyCode::Up => {
-                if let Some(selected) = list.list_state.selected() {
-                    if selected > 0 {
-                        list.list_state.select(Some(selected - 1));
+                if let Some(list_index) = list_index {
+                    if *list_index > 0 {
+                        *list_index -= 1;
                     }
                 }
             }
             KeyCode::Down => {
-                if let Some(selected) = list.list_state.selected() {
-                    if selected < list.conversation_list.len() - 1  {
-                        list.list_state.select(Some(selected + 1));
+                if let Some(list_index) = list_index {
+                    if *list_index < list.len() - 1 {
+                        *list_index += 1;
                     }
                 }
             }
@@ -87,69 +88,69 @@ impl<'a> InputReciever<'a> {
         Ok(())
     }
 
-    fn select_list_element(&self, id: String, code: KeyCode) {
+    fn select_list_element(&self, app: &mut App, code: KeyCode) {
+        // TODO: Implement
         if code == KeyCode::Enter {
             println!("Notify!");
-            self.notifier.notify_observers(Event::ChangeConversation(id));
         }
     }
     
-    fn navigate_windows(&self, code: KeyCode, active_window_item: &mut MenuItem, focus_window_item: &mut MenuItem){
+    fn navigate_windows(&self, code: KeyCode, app: &mut App){
         match code{
             KeyCode::Up => {
-                self.move_up(active_window_item);
+                self.move_up(&mut app.hovered_block);
             }
             KeyCode::Down => {
-                self.move_down(active_window_item);
+                self.move_down(&mut app.hovered_block);
             }
             KeyCode::Left => {
-                self.move_left(active_window_item);
+                self.move_left(&mut app.hovered_block);
             }
             KeyCode::Right => {
-                self.move_right(active_window_item);
+                self.move_right(&mut app.hovered_block);
             }
             KeyCode::Enter => {
-                focus_window_item.clone_from((active_window_item));
+                app.active_block.clone_from(&app.hovered_block);
             }
             _ => {}
         }
     }
     
-    fn move_up(&self, active_window_item: &mut MenuItem) {
+    fn move_up(&self, active_window_item: &mut ActiveBlock) {
         match active_window_item {
-            MenuItem::Channels => {
-                *active_window_item = MenuItem::Teams;
+            ActiveBlock::Channels => {
+                *active_window_item = ActiveBlock::Teams;
             }
-            MenuItem::Users => {
-                *active_window_item = MenuItem::Channels;
+            ActiveBlock::Users => {
+                *active_window_item = ActiveBlock::Channels;
             }
-            MenuItem::Input => {
-                *active_window_item = MenuItem::Channels;
+            ActiveBlock::Input => {
+                *active_window_item = ActiveBlock::Channels;
             }
             _ => {}
         }
     }
     
-    fn move_right(&self, active_window_item: &mut MenuItem) {
-        *active_window_item = MenuItem::Input;
+    fn move_right(&self, active_window_item: &mut ActiveBlock) {
+        *active_window_item = ActiveBlock::Input;
     }
     
-    fn move_down(&self, active_window_item: &mut MenuItem) {
+    fn move_down(&self, active_window_item: &mut ActiveBlock) {
         match active_window_item {
-            MenuItem::Teams => {
-                *active_window_item = MenuItem::Channels;
+            ActiveBlock::Teams => {
+                *active_window_item = ActiveBlock::Channels;
             }
-            MenuItem::Channels => {
-                *active_window_item = MenuItem::Users;
+            ActiveBlock::Channels => {
+                *active_window_item = ActiveBlock::Users;
             }
             _ => {}
         }
     }
     
-    fn move_left(&self, active_window_item: &mut MenuItem) {
+    fn move_left(&self, active_window_item: &mut ActiveBlock) {
         match active_window_item {
-            MenuItem::Input => {
-                *active_window_item = MenuItem::Users;
+            ActiveBlock::Input => {
+                *active_window_item = ActiveBlock::Users;
             }
             _ => {}
         }
