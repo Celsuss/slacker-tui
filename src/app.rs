@@ -1,6 +1,7 @@
 use crossterm::{
     event::{self, Event as CEvent, KeyCode, KeyEvent, KeyModifiers},
     terminal::{disable_raw_mode, enable_raw_mode},
+    cursor::{MoveTo}, ExecutableCommand,
 };
 // use rand::{distributions::Alphanumeric, prelude::*};
 use serde_json::Value;
@@ -62,6 +63,8 @@ pub struct App<'a>{
     pub input: Vec<char>,
     pub input_idx: usize,
     pub input_cursor_position: u16,
+    pub input_cursor_horizontal_offset: u16,
+    pub input_cursor_vertical_offset: u16,
 }
 
 impl<'a> App<'a> {
@@ -91,6 +94,8 @@ impl<'a> App<'a> {
             input: vec![],
             input_idx: 0,
             input_cursor_position: 0,
+            input_cursor_horizontal_offset: 0,
+            input_cursor_vertical_offset: 0,
         }
     }
 
@@ -119,15 +124,20 @@ pub fn start_ui(rx: &mpsc::Receiver<InputEvent<crossterm::event::KeyEvent>>)
     let mut input_reciever = InputReciever::new(rx);
 
     loop{
+        // Draw UI
         terminal.draw(|rect| 
             ui::draw_ui(rect,
                 &app).expect("Draw UI"),
         ).expect("draw ui expect");
 
+        // Handle input
         let event = input_reciever.handle_input(
             &mut app)
             .expect("Input expect");
 
+       update_cursor(&mut terminal, &mut app)?;
+
+        // Handle exit event
         if matches!(event, InputEvent::Quit){
             disable_raw_mode()?;
             terminal.show_cursor()?;
@@ -135,5 +145,27 @@ pub fn start_ui(rx: &mpsc::Receiver<InputEvent<crossterm::event::KeyEvent>>)
         }
     }
 
+    Ok(())
+}
+
+pub fn update_cursor(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
+    app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
+    // Set cursor offset
+    app.input_cursor_horizontal_offset = ui::CHANNELS_WIDTH + (ui::MARGIN * 2);
+    let bottom = terminal.size()?.bottom() as f64;  // Convert to f64 to to do floating point math
+    app.input_cursor_vertical_offset = (bottom * (ui::MESSAGES_HEIGHT_PERCENTAGE as f64/100.0)) as u16; // + (ui::MARGIN * 6);
+
+    // Set cursor position
+    if app.active_block == ActiveBlock::Input {
+        terminal.show_cursor()?;
+        terminal.backend_mut().execute(
+            MoveTo(
+                app.input_cursor_position + app.input_cursor_horizontal_offset,
+                app.input_cursor_vertical_offset))
+            .expect("Set cursor position expect");
+    }
+    else{
+        terminal.hide_cursor()?;
+    }
     Ok(())
 }

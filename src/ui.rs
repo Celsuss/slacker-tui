@@ -15,15 +15,19 @@ use crate::app::{
     App, ActiveBlock,
 };
 
+pub const MARGIN: u16 = 1;
+pub const MESSAGES_HEIGHT_PERCENTAGE: u16 = 90;
+pub const CHANNELS_WIDTH: u16 = 20;
+
 pub fn draw_ui<B: Backend>(frame: &mut Frame<B>, app: &App<'_>)
 -> Result<(), Box<dyn std::error::Error>> {
     let size = frame.size();
     let root_chunk = Layout::default()
         .direction(Direction::Horizontal)
-        .margin(1)
+        .margin(MARGIN)
         .constraints(
             [
-                Constraint::Length(20),   // Channels
+                Constraint::Length(CHANNELS_WIDTH),   // Channels
                 Constraint::Min(2),       // Messages
             ]
             .as_ref(),
@@ -126,8 +130,8 @@ B: Backend{
     let conversation_chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints(
-            [Constraint::Percentage(90),            // Messages
-            Constraint::Percentage(10)].as_ref(),   // Input
+            [Constraint::Percentage(MESSAGES_HEIGHT_PERCENTAGE),                // Messages
+            Constraint::Percentage(100-MESSAGES_HEIGHT_PERCENTAGE)].as_ref(),   // Input
         )
         .split(chunk);
 
@@ -184,8 +188,6 @@ pub fn draw_conversation_input<B>(frame: &mut Frame<B>, app: &App<'_>, chunk: Re
 where
 B: Backend{
     let title = "Input";
-
-    // TODO: Get real input
     let text_input: String = app.input.iter().collect();
 
     let items: Vec<Spans> = vec![
