@@ -102,10 +102,18 @@ impl<'a> InputReciever<'a> {
     fn handle_user_intput(&self, app: &mut App, code: KeyCode){
         match code {
             KeyCode::Left => {
-
+                if app.input_idx > 0 {
+                    let c = app.input[app.input_idx - 1];
+                    app.input_idx -= 1;
+                    app.input_cursor_position -= util::calculate_character_width(c);
+                }
             }
             KeyCode::Right => {
-
+                if app.input_idx < app.input.len() {
+                    let c = app.input[app.input_idx];
+                    app.input_idx += 1;
+                    app.input_cursor_position += util::calculate_character_width(c);
+                }
             }
             KeyCode::Backspace => {
                 if !app.input.is_empty() && app.input_idx > 0 {
