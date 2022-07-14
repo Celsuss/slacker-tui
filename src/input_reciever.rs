@@ -8,7 +8,7 @@ use tui::{
 };
 use std::sync::mpsc;
 
-use crate::app::{App, ActiveBlock};
+use crate::{app::{App, ActiveBlock}, slack_interface::messages_interface};
 use crate::{InputEvent};
 use crate::slack_interface::{user_interface::User, channel_interface::Channel};
 use crate::util;
@@ -40,9 +40,9 @@ impl<'a> InputReciever<'a> {
                     // TODO: Move this to a function
                     app.active_block.clone_from(&ActiveBlock::None);
                     // TODO: Improve to only use one selected index
-                    app.selected_team_index = None;
-                    app.selected_channel_index = None;
-                    app.selected_user_index = None;
+                    // app.selected_team_index = None;
+                    // app.selected_channel_index = None;
+                    // app.selected_user_index = None;
                 }
                 _ => {
                     match app.active_block {
@@ -126,6 +126,19 @@ impl<'a> InputReciever<'a> {
                 app.input.insert(app.input_idx, c);
                 app.input_idx += 1;
                 app.input_cursor_position += util::calculate_character_width(c);
+            }
+            KeyCode::Enter => {
+                // Send message
+                if let Some(channel_index) = app.selected_channel_index {
+                    messages_interface::send_channel_message(
+                        &String::from_iter(&app.input),
+                        &app.channel_list[channel_index].name,
+                        &app.oauth_token).expect("Send channel message expect");
+
+                    app.input.clear();
+                    app.input_idx = 0;
+                    app.input_cursor_position = 0;
+                }
             }
             _ => {}
         }

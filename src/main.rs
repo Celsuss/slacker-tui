@@ -37,9 +37,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let channel_list = channel_interface::get_channel_list(oauth_token).expect("Get channel list expect");
     // let messages_list = messages_interface::get_channel_messages(&channel_list[0].id, oauth_token).expect("Get messages list expect");
 
+    // let send_message = messages_interface::send_channel_message(&channel_list[0].name, oauth_token).expect("Send message expect");
+
     // println!("Conversation : {}, {}", channel_list[0].name, channel_list[0].id);
     // println!("Success");
-    // return Ok(());
+    // return Ok(());  
 
 
     // enable_raw_mode().expect("can run in raw mode");
